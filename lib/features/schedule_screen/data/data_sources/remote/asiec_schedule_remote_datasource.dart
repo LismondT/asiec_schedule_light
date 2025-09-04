@@ -1,26 +1,31 @@
 
-import 'package:asiec_schedule/core/data/data_sources/schedule/remote/schedule_api_service.dart';
 import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
+import 'package:asiec_schedule/features/schedule_screen/data/data_sources/remote/schedule_remote_datasource.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
 
-class AsiecScheduleApiService extends ScheduleApiService {
+class AsiecScheduleRemoteDatasource extends ScheduleRemoteDatasource {
   final String _baseUrl = "https://www.asiec.ru/ras/ras.php";
   final Dio _client;
 
-  AsiecScheduleApiService(this._client);
+  AsiecScheduleRemoteDatasource(this._client);
 
   @override
-  Stream<DayEntity> getSchedule(DateTime start, int days, ScheduleRequestType type, String id) async* {
+  Future<ScheduleEntity> getSchedule(DateTime start, int days, ScheduleRequestType type, String id) async {
     final responseDays = await _getScheduleBody(start, start.add(Duration(days: days)), type, id);
-
-    for (int i = 0; i < responseDays.length; i++) {
-      yield responseDays[i];
-    }
+    final firstDate = responseDays.firstOrNull?.date ?? DateTime(1);
+    final lastDate = responseDays.lastOrNull?.date ?? DateTime(1);
+    final schedule = ScheduleEntity(
+      days: responseDays,
+      firstDate: firstDate,
+      lastDate: lastDate
+    );
+    return schedule;
   }
 
   Future<List<DayEntity>> _getScheduleBody(DateTime startDate, DateTime endDate, ScheduleRequestType type, String id) async {

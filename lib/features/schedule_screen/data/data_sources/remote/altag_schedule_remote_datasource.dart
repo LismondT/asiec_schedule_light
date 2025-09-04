@@ -1,8 +1,9 @@
 
-import 'package:asiec_schedule/core/data/data_sources/schedule/remote/schedule_api_service.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/core/utils/altag/altag_schedule_time_service.dart';
+import 'package:asiec_schedule/features/schedule_screen/data/data_sources/remote/schedule_remote_datasource.dart';
 import 'package:flutter/material.dart';
 import 'package:html/dom.dart';
 import 'package:http/http.dart';
@@ -12,16 +13,18 @@ import 'package:intl/intl.dart';
 import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
 
 
-class AltagScheduleApiService extends ScheduleApiService {
+class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
   final String _baseUrl = 'http://schedule.altag.ru:89/ras.php';
   final Client _client;
   final AltagScheduleTimeService _scheduleTime;
 
-  AltagScheduleApiService(this._client, this._scheduleTime);
+  AltagScheduleRemoteDatasource(this._client, this._scheduleTime);
 
   @override
-  Stream<DayEntity> getSchedule(DateTime start, int days, ScheduleRequestType type, String id) async* {
+  Future<ScheduleEntity> getSchedule(DateTime start, int days, ScheduleRequestType type, String id) async {
     int nullDayCount = 0;
+
+    final List<DayEntity> scheduleDays = [];
 
     for (int i = 0; i < days; i++) {
       DateTime day = start.add(Duration(days: i));
@@ -40,10 +43,18 @@ class AltagScheduleApiService extends ScheduleApiService {
         continue;
       }
       
-      yield dayEntity;
+      scheduleDays.add(dayEntity);
 
       await Future.delayed(Duration(milliseconds: 125));
     }
+
+    final firstDate = scheduleDays.firstOrNull?.date ?? DateTime(1);
+    final lastDate = scheduleDays.lastOrNull?.date ?? DateTime(1);
+    final schedule = ScheduleEntity(
+        firstDate: firstDate,
+        lastDate: lastDate,
+        days: scheduleDays);
+    return schedule;
   }
 
   Future<DayEntity?> _getDay(DateTime date, ScheduleRequestType type, String id) async {

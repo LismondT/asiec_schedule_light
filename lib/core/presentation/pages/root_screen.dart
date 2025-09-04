@@ -1,16 +1,5 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
-
-import '../../../features/schedule_screen/presentation/bloc/schedule/remote/remote_schedule_bloc.dart';
-import '../../../features/schedule_screen/presentation/pages/schedule_screen.dart';
-import '../../../features/settings_screen/presentation/pages/settings_screen.dart';
-import '../../../features/timer_screen/pair_timer_screen.dart';
-
-
-import 'package:animations/animations.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class RootScreen extends StatelessWidget {

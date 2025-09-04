@@ -1,6 +1,7 @@
 import 'package:asiec_schedule/core/bloc/theme/theme_cubit.dart';
 import 'package:asiec_schedule/core/bloc/theme/theme_state.dart';
 import 'package:asiec_schedule/core/routes/app_route.dart';
+import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,8 +11,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  BlocProvider<ThemeCubit>(
-      create: (context) => sl(),
+    return  MultiBlocProvider(
+      providers: [
+        BlocProvider<ThemeCubit>(
+            create: (BuildContext context) => sl<ThemeCubit>()
+        ),
+        BlocProvider<ScheduleCubit>(
+            create: (BuildContext context) => sl<ScheduleCubit>()..loadDefaultSchedule()
+        )
+      ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) {
           return MaterialApp.router(
@@ -23,9 +31,9 @@ class MyApp extends StatelessWidget {
               ),
               useMaterial3: true,
             ),
-            routerConfig: AppRouter.router,       
+            routerConfig: AppRouter.router,
           );
-        } 
+        }
       ),
     );
   }
