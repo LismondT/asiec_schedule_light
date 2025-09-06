@@ -8,15 +8,18 @@ import 'package:asiec_schedule/core/utils/altag/altag_schedule_time_service.dart
 import 'package:asiec_schedule/features/schedule_screen/domain/repository/schedule_repository.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_default_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
-import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/altag_ids_api.dart';
-import 'package:asiec_schedule/features/settings_screen/data/repositories/altag_settings_fields_repository_impl.dart';
+import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/local_ids_datasource.dart';
+import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/memory_ids_datasource.dart';
+import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/altag_ids_datasource.dart';
+import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/remote_ids_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/data/repositories/settings_repository_impl.dart';
-import 'package:asiec_schedule/features/settings_screen/domain/repositories/settings_fields_repository.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/repositories/settings_repository.dart';
+import 'package:asiec_schedule/features/settings_screen/domain/use_cases/get_local_setting_ids.dart';
+import 'package:asiec_schedule/features/settings_screen/domain/use_cases/get_setting_ids.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/use_cases/get_settings.dart';
-import 'package:asiec_schedule/features/settings_screen/domain/use_cases/get_settings_fields_use_case.dart';
+import 'package:asiec_schedule/features/settings_screen/domain/use_cases/save_local_settings_ids.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/use_cases/save_settings.dart';
-import 'package:asiec_schedule/features/settings_screen/presentation/bloc/settings_bloc.dart';
+import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:get_it/get_it.dart';
@@ -28,8 +31,7 @@ import 'features/schedule_screen/data/data_sources/remote/altag_schedule_remote_
 import 'features/schedule_screen/data/data_sources/remote/asiec_schedule_remote_datasource.dart';
 import 'features/schedule_screen/data/data_sources/remote/schedule_remote_datasource.dart';
 import 'features/schedule_screen/data/repository/schedule_repository_impl.dart';
-import 'features/settings_screen/data/data_sources/remote/asiec_ids_api.dart';
-import 'features/settings_screen/data/repositories/asiec_settings_fields_repository_impl.dart';
+import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.dart';
 
 final sl = GetIt.instance;
 
@@ -55,43 +57,42 @@ Future<void> initializeDependencies() async {
       SharedPreferencesAsync(options: SharedPreferencesOptions());
 
   //Dependencies
+  //--LocalDatasources
+  sl.registerSingleton<LocalIdsDatasource>(MemoryIdsDatasource());
+
   if (isAltag) {
-    //Apis
+    //RemoteDatasources
     sl.registerSingleton<AltagScheduleTimeService>(
         AltagScheduleTimeService(sl()));
     sl.registerSingleton<ScheduleRemoteDatasource>(
         AltagScheduleRemoteDatasource(sl(), sl()));
-    sl.registerSingleton<AltagIdsApi>(AltagIdsApi(sl()));
-
-    sl.registerSingleton<SettingsFieldsRepository>(
-        AltagSettingsFieldsRepositoryImpl(sl()));
+    sl.registerSingleton<RemoteIdsDatasource>(AltagIdsDatasource(sl()));
   } else {
-    //Apis
+    //RemoteDatasources
     sl.registerSingleton<ScheduleRemoteDatasource>(
         AsiecScheduleRemoteDatasource(sl()));
-    sl.registerSingleton<AsiecIdsApi>(AsiecIdsApi(sl()));
-
-    sl.registerSingleton<SettingsFieldsRepository>(
-        AsiecSettingsFieldsRepositoryImpl(sl()));
+    sl.registerSingleton<RemoteIdsDatasource>(AsiecIdsDatasource(sl()));
   }
 
   //Repositories
   sl.registerSingleton<ScheduleRepository>(ScheduleRepositoryImpl(sl()));
-  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(prefs));
+  sl.registerSingleton<SettingsRepository>(
+      SettingsRepositoryImpl(prefs, sl(), sl()));
 
   //UseCases
   //--Schedule
-  sl.registerSingleton<GetDefaultSchedule>(
-      GetDefaultSchedule(sl()));
+  sl.registerSingleton<GetDefaultSchedule>(GetDefaultSchedule(sl()));
 
   //--Settings
-  sl.registerSingleton<GetSettingsUseCase>(GetSettingsUseCase(sl()));
-  sl.registerSingleton<SaveSettingsUseCase>(SaveSettingsUseCase(sl()));
-  sl.registerSingleton<GetSettingsFieldsUseCase>(
-      GetSettingsFieldsUseCase(sl()));
+  sl.registerSingleton<GetSettings>(GetSettings(sl()));
+  sl.registerSingleton<GetSettingIds>(GetSettingIds(sl()));
+  sl.registerSingleton<GetLocalSettingIds>(GetLocalSettingIds(sl()));
+  sl.registerSingleton<SaveSettings>(SaveSettings(sl()));
+  sl.registerSingleton<SaveLocalSettingIds>(SaveLocalSettingIds(sl()));
 
-  //Blocs
+  //Cubits
   sl.registerFactory<ScheduleCubit>(() => ScheduleCubit(sl(), sl()));
-  sl.registerFactory<SettingsBloc>(() => SettingsBloc(sl(), sl(), sl()));
+  sl.registerFactory<SettingsCubit>(
+      () => SettingsCubit(sl(), sl(), sl(), sl(), sl()));
   sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl()));
 }

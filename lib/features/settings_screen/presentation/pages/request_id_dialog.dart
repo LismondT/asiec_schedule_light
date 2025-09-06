@@ -1,42 +1,52 @@
-import 'package:asiec_schedule/features/settings_screen/presentation/bloc/settings_bloc.dart';
-import 'package:asiec_schedule/features/settings_screen/presentation/bloc/settings_event.dart';
+import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
+import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RequestIdDialog extends StatelessWidget {
-  final SettingsBloc settingsBloc;
-  
-  const RequestIdDialog({super.key, required this.settingsBloc});
+  final Map<String, String> ids;
+
+  const RequestIdDialog({super.key, required this.ids});
 
   @override
-  Widget build(BuildContext context) { 
-    final ids = settingsBloc.currentRequestIds.keys;
+  Widget build(BuildContext context) {
+    final keys = ids.keys;
 
     return AlertDialog(
       title: const Text('Выберите '),
       content: SingleChildScrollView(
         child: ListBody(
-          children: ids.map((idKey) {
-            
+          children: keys.map((idKey) {
             return InkWell(
-              onTap: () {
-                settingsBloc.add(SelectRequestIdEvent(idKey));
-                Navigator.of(context).pop();
+              onTap: () async {
+                final id = ids[idKey] ?? '';
+                _handleIdSelection(context, id);
               },
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(idKey),
               ),
             );
-          
           }).toList(),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Закрыть')
-        )
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Закрыть'))
       ],
     );
+  }
+
+  void _handleIdSelection(BuildContext context, String id) {
+    final settingsCubit = context.read<SettingsCubit>();
+    final scheduleCubit = context.read<ScheduleCubit>();
+
+    Navigator.of(context).pop();
+
+    Future.microtask(() async {
+      await settingsCubit.changeRequestId(id);
+      await scheduleCubit.loadDefaultSchedule();
+    });
   }
 }

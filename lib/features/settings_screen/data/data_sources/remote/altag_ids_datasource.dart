@@ -1,9 +1,12 @@
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
+import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/remote_ids_datasource.dart';
+import 'package:asiec_schedule/features/settings_screen/domain/entities/setting_ids_entity.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
 
-class AltagIdsApi {
+
+class AltagIdsDatasource extends RemoteIdsDatasource {
   final Client _client;
   final String _groupsUrl = 'http://schedule.altag.ru:89/filter_grup.php';
   final String _teachersUrl = 'http://schedule.altag.ru:89/filter_prep.php';
@@ -20,7 +23,7 @@ class AltagIdsApi {
   };
 
 
-  const AltagIdsApi(this._client);
+  AltagIdsDatasource(this._client);
 
 
   Future<Map<ScheduleRequestType, Map<String, String>>> getIds() async {
@@ -98,5 +101,11 @@ class AltagIdsApi {
     }
 
     return ids;
+  }
+
+  @override
+  Future<SettingIdsEntity> loadIds() {
+    // TODO: implement loadIds
+    throw UnimplementedError();
   }
 }

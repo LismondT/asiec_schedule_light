@@ -2,6 +2,7 @@ import 'package:asiec_schedule/core/bloc/theme/theme_cubit.dart';
 import 'package:asiec_schedule/core/bloc/theme/theme_state.dart';
 import 'package:asiec_schedule/core/routes/app_route.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
+import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
 import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,30 +12,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MultiBlocProvider(
+    return MultiBlocProvider(
       providers: [
         BlocProvider<ThemeCubit>(
-            create: (BuildContext context) => sl<ThemeCubit>()
-        ),
+            create: (BuildContext context) => sl<ThemeCubit>()),
         BlocProvider<ScheduleCubit>(
-            create: (BuildContext context) => sl<ScheduleCubit>()..loadDefaultSchedule()
-        )
+            create: (BuildContext context) =>
+                sl<ScheduleCubit>()..loadDefaultSchedule()),
+        BlocProvider<SettingsCubit>(
+            create: (BuildContext context) =>
+                sl<SettingsCubit>()..loadSettings())
       ],
-      child: BlocBuilder<ThemeCubit, ThemeState>(
-        builder: (context, state) {
-          return MaterialApp.router(
-            title: 'Asiec Schedule Light',
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
+      child: BlocBuilder<ThemeCubit, ThemeState>(builder: (context, state) {
+        return MaterialApp.router(
+          title: 'Asiec Schedule Light',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.deepPurple,
-                brightness: state.isDark ? Brightness.dark : Brightness.light
-              ),
-              useMaterial3: true,
-            ),
-            routerConfig: AppRouter.router,
-          );
-        }
-      ),
+                brightness: state.isDark ? Brightness.dark : Brightness.light),
+            useMaterial3: true,
+          ),
+          routerConfig: AppRouter.router,
+        );
+      }),
     );
   }
 }

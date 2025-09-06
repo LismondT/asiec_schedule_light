@@ -8,7 +8,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       : super(ScheduleStateInit());
 
   final GetDefaultSchedule _getDefaultSchedule;
-  final GetSettingsUseCase _getSettings;
+  final GetSettings _getSettings;
 
   Future<void> loadDefaultSchedule() async {
     emit(ScheduleStateLoading());

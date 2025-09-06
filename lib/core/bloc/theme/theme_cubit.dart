@@ -23,7 +23,6 @@ class ThemeCubit extends Cubit<ThemeState> {
       await repository.saveSettings(
         SettingsEntity(
           isDarkMode: brightness == Brightness.dark,
-          shemeColor: Colors.deepPurple,
           requestType: prevSettings.requestType,
           requestId: prevSettings.requestId
         )
