@@ -40,10 +40,11 @@ import 'features/schedule_screen/data/repository/schedule_repository_impl.dart';
 import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.dart';
 
 final sl = GetIt.instance;
+const isAltag = true;
+const AppName = isAltag ? "Altag Schedule" : "Asiec Schedule";
+const AppVersion = "3.0.0";
 
 Future<void> initializeDependencies() async {
-  const bool isAltag = true;
-
   final dio = Dio(BaseOptions());
 
   (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =

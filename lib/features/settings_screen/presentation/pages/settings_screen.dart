@@ -6,6 +6,7 @@ import 'package:asiec_schedule/features/settings_screen/domain/entities/settings
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_states.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/pages/request_id_dialog.dart';
+import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -264,7 +265,7 @@ class SettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Asiec Schedule',
+              AppName,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -272,7 +273,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             SizedBox(height: 4),
             Text(
-              'Версия 3.0.0',
+              'Версия $AppVersion',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
