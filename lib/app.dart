@@ -3,6 +3,7 @@ import 'package:asiec_schedule/core/bloc/theme/theme_state.dart';
 import 'package:asiec_schedule/core/routes/app_route.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
+import 'package:asiec_schedule/features/timer_screen/presentation/cubit/lecture_timer_cubit.dart';
 import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,12 +17,15 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<ThemeCubit>(
             create: (BuildContext context) => sl<ThemeCubit>()),
+        BlocProvider<SettingsCubit>(
+            create: (BuildContext context) =>
+                sl<SettingsCubit>()..loadSettings()),
         BlocProvider<ScheduleCubit>(
             create: (BuildContext context) =>
                 sl<ScheduleCubit>()..loadDefaultSchedule()),
-        BlocProvider<SettingsCubit>(
+        BlocProvider<LectureTimerCubit>(
             create: (BuildContext context) =>
-                sl<SettingsCubit>()..loadSettings())
+                sl<LectureTimerCubit>()..startTimer())
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(builder: (context, state) {
         return MaterialApp.router(

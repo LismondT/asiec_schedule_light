@@ -5,7 +5,7 @@ import 'package:asiec_schedule/features/settings_screen/presentation/pages/setti
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/timer_screen/pair_timer_screen.dart';
+import '../../features/timer_screen/presentation/pages/lecture_timer_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey =
@@ -28,9 +28,7 @@ class AppRouter {
               StatefulShellBranch(routes: [
                 GoRoute(
                   path: timerRoutePath,
-                  builder: (context, state) => const PairTimerScreen(
-                    schedule: [],
-                  ),
+                  builder: (context, state) => const LectureTimerScreen(),
                 )
               ]),
               StatefulShellBranch(routes: [

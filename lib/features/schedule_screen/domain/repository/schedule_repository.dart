@@ -4,4 +4,8 @@ import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 abstract class ScheduleRepository {
   Future<ScheduleEntity> getSchedule(
       DateTime start, int days, ScheduleRequestType type, String id);
+
+  Future<ScheduleEntity> getLocalSchedule();
+
+  Future<void> saveLocalSchedule(ScheduleEntity schedule);
 }

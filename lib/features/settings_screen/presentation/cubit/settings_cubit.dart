@@ -38,9 +38,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> saveSettings(SettingsEntity settings) async {
     try {
       await _saveSettings(settings);
-      final updated_settings = await _getSettings();
+      final updatedSettings = await _getSettings();
       final ids = await _getLocalIds();
-      emit(SettingsStateLoaded(updated_settings, ids));
+      emit(SettingsStateLoaded(updatedSettings, ids));
     } catch (e) {
       //ToDo: Error handling
     }

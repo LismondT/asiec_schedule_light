@@ -10,31 +10,43 @@ class RequestIdDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final keys = ids.keys;
+    final keys = ids.keys.toList()..sort();
 
-    return AlertDialog(
-      title: const Text('Выберите '),
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: keys.map((idKey) {
-            return InkWell(
-              onTap: () async {
-                final id = ids[idKey] ?? '';
-                _handleIdSelection(context, id);
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              'Выберите',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 400),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: keys.length,
+              itemBuilder: (context, index) {
+                final idKey = keys[index];
+                return ListTile(
+                  title: Text(idKey),
+                  onTap: () => _handleIdSelection(context, ids[idKey]!),
+                );
               },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(idKey),
-              ),
-            );
-          }).toList(),
-        ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Закрыть'),
+            ),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Закрыть'))
-      ],
     );
   }
 

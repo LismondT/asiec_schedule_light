@@ -5,11 +5,15 @@ import 'dart:io';
 import 'package:asiec_schedule/core/bloc/theme/theme_cubit.dart';
 import 'package:asiec_schedule/core/network/http_override.dart';
 import 'package:asiec_schedule/core/utils/altag/altag_schedule_time_service.dart';
+import 'package:asiec_schedule/features/schedule_screen/data/data_sources/local/schedule_local_datasource.dart';
+import 'package:asiec_schedule/features/schedule_screen/data/data_sources/local/schedule_shared_preferences_datasource.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/repository/schedule_repository.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_default_schedule.dart';
+import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_local_schedule.dart';
+import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/save_local_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/local_ids_datasource.dart';
-import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/memory_ids_datasource.dart';
+import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/shared_preferences_ids_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/altag_ids_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/remote_ids_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/data/repositories/settings_repository_impl.dart';
@@ -20,6 +24,8 @@ import 'package:asiec_schedule/features/settings_screen/domain/use_cases/get_set
 import 'package:asiec_schedule/features/settings_screen/domain/use_cases/save_local_settings_ids.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/use_cases/save_settings.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
+import 'package:asiec_schedule/features/timer_screen/domain/use_cases/get_current_day.dart';
+import 'package:asiec_schedule/features/timer_screen/presentation/cubit/lecture_timer_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:get_it/get_it.dart';
@@ -36,9 +42,9 @@ import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.d
 final sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
-  const bool isAltag = false;
+  const bool isAltag = true;
 
-  final dio = Dio();
+  final dio = Dio(BaseOptions());
 
   (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
       (HttpClient client) {
@@ -53,12 +59,15 @@ Future<void> initializeDependencies() async {
   HttpOverrides.global = HttpOverride();
   await initializeDateFormatting('ru_RU', null);
 
-  SharedPreferencesAsync prefs =
-      SharedPreferencesAsync(options: SharedPreferencesOptions());
+  sl.registerSingleton(
+      SharedPreferencesAsync(options: SharedPreferencesOptions()));
 
   //Dependencies
   //--LocalDatasources
-  sl.registerSingleton<LocalIdsDatasource>(MemoryIdsDatasource());
+  sl.registerSingleton<LocalIdsDatasource>(
+      SharedPreferencesIdsDatasource(sl()));
+  sl.registerSingleton<ScheduleLocalDatasource>(
+      ScheduleSharedPreferencesDatasource(sl()));
 
   if (isAltag) {
     //RemoteDatasources
@@ -75,13 +84,15 @@ Future<void> initializeDependencies() async {
   }
 
   //Repositories
-  sl.registerSingleton<ScheduleRepository>(ScheduleRepositoryImpl(sl()));
+  sl.registerSingleton<ScheduleRepository>(ScheduleRepositoryImpl(sl(), sl()));
   sl.registerSingleton<SettingsRepository>(
-      SettingsRepositoryImpl(prefs, sl(), sl()));
+      SettingsRepositoryImpl(sl(), sl(), sl()));
 
   //UseCases
   //--Schedule
   sl.registerSingleton<GetDefaultSchedule>(GetDefaultSchedule(sl()));
+  sl.registerSingleton(GetLocalSchedule(sl()));
+  sl.registerSingleton(SaveLocalSchedule(sl()));
 
   //--Settings
   sl.registerSingleton<GetSettings>(GetSettings(sl()));
@@ -90,9 +101,14 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<SaveSettings>(SaveSettings(sl()));
   sl.registerSingleton<SaveLocalSettingIds>(SaveLocalSettingIds(sl()));
 
+  //--Timer
+  sl.registerSingleton(GetCurrentDay(sl()));
+
   //Cubits
-  sl.registerFactory<ScheduleCubit>(() => ScheduleCubit(sl(), sl()));
+  sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl()));
+  sl.registerFactory<ScheduleCubit>(
+      () => ScheduleCubit(sl(), sl(), sl(), sl()));
   sl.registerFactory<SettingsCubit>(
       () => SettingsCubit(sl(), sl(), sl(), sl(), sl()));
-  sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl()));
+  sl.registerFactory(() => LectureTimerCubit(sl()));
 }

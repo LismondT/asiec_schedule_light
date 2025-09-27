@@ -13,11 +13,12 @@ class RootScreen extends StatelessWidget {
 
     return Scaffold(
       body: PageTransitionSwitcher(
+        duration: const Duration(milliseconds: 300),
         transitionBuilder: (
-          Widget child,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
+            Widget child,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            ) {
           return SharedAxisTransition(
             animation: animation,
             secondaryAnimation: secondaryAnimation,
@@ -39,7 +40,7 @@ class RootScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(1, Icons.timer_outlined, 'Время', context),
-            const SizedBox(width: 40), // Место для центральной кнопки
+            const SizedBox(width: 20),
             _buildNavItem(2, Icons.settings, 'Настройки', context),
           ],
         ),
@@ -50,7 +51,7 @@ class RootScreen extends StatelessWidget {
   Widget _buildCenterButton(BuildContext context) {
     final isCenterSelected = navigationShell.currentIndex == 0;
     return FloatingActionButton(
-      onPressed: () => navigationShell.goBranch(0),
+      onPressed: () => _navigateToBranch(0),
       shape: const CircleBorder(),
       backgroundColor: isCenterSelected
           ? Theme.of(context).colorScheme.primary
@@ -90,10 +91,15 @@ class RootScreen extends StatelessWidget {
           ),
         ],
       ),
-      onPressed: () => navigationShell.goBranch(
-        index,
-        initialLocation: index == navigationShell.currentIndex,
-      ),
+      onPressed: () => _navigateToBranch(index),
+    );
+  }
+
+  void _navigateToBranch(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: false, //- это важно для анимации!
+      //initialLocation: index == navigationShell.currentIndex,
     );
   }
 }
