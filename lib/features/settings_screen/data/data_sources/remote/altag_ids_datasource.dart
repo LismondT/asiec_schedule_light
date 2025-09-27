@@ -1,4 +1,3 @@
-import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/remote_ids_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/entities/setting_ids_entity.dart';
 import 'package:html/dom.dart';
@@ -7,9 +6,9 @@ import 'package:http/http.dart';
 
 class AltagIdsDatasource extends RemoteIdsDatasource {
   final Client _client;
-  final String _groupsUrl = 'http://schedule.altag.ru:89/filter_grup.php';
-  final String _teachersUrl = 'http://schedule.altag.ru:89/filter_prep.php';
-  final String _classroomsUrl = 'http://schedule.altag.ru:89/filter_aud.php';
+  final String _groupsUrl = 'https://schedule.altag.ru/filter_grup.php';
+  final String _teachersUrl = 'https://schedule.altag.ru/filter_prep.php';
+  final String _classroomsUrl = 'https://schedule.altag.ru/filter_aud.php';
 
   static const Map<String, String> _headers = {
     "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
@@ -22,19 +21,6 @@ class AltagIdsDatasource extends RemoteIdsDatasource {
   };
 
   AltagIdsDatasource(this._client);
-
-  Future<Map<ScheduleRequestType, Map<String, String>>> getIds() async {
-    Map<ScheduleRequestType, Map<String, String>> allIds = {};
-    final groupIds = await _getGroupsIds();
-    final teachersIds = await _getTeachersIds();
-    final classroomsIds = await _getClassroomsIds();
-
-    allIds[ScheduleRequestType.groups] = groupIds;
-    allIds[ScheduleRequestType.teachers] = teachersIds;
-    allIds[ScheduleRequestType.classrooms] = classroomsIds;
-
-    return allIds;
-  }
 
   Future<Map<String, String>> _getGroupsIds() async {
     Response response = await _client.post(Uri.parse(_groupsUrl),

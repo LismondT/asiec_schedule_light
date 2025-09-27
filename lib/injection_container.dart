@@ -71,8 +71,9 @@ Future<void> initializeDependencies() async {
 
   if (isAltag) {
     //RemoteDatasources
-    sl.registerSingleton<AltagScheduleTimeService>(
-        AltagScheduleTimeService(sl()));
+    final timeService = AltagScheduleTimeService(sl());
+    await timeService.initialize();
+    sl.registerSingleton<AltagScheduleTimeService>(timeService);
     sl.registerSingleton<ScheduleRemoteDatasource>(
         AltagScheduleRemoteDatasource(sl(), sl()));
     sl.registerSingleton<RemoteIdsDatasource>(AltagIdsDatasource(sl()));

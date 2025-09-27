@@ -14,7 +14,7 @@ import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
 
 
 class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
-  final String _baseUrl = 'http://schedule.altag.ru:89/ras.php';
+  final String _baseUrl = 'https://schedule.altag.ru/ras.php';
   final Client _client;
   final AltagScheduleTimeService _scheduleTime;
 
@@ -102,11 +102,18 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
       int number = int.parse(numberStr);
       LessonTime? time = _scheduleTime.getLessonTime(date.weekday, number);
 
+      int subgroup = 0;
+      if (group.contains("п. 1")) {
+        subgroup = 1;
+      } else if (group.contains("п. 2")) {
+        subgroup = 2;
+      }
+
       lessons.add(LessonEntity(
         number: number,
         name: name,
         group: group,
-        subgroup: 0, //ToDo: Доделать логику подгрупп
+        subgroup: subgroup,
         teacher: teacher,
         classroom: classroom,
         territory: territory,
@@ -120,6 +127,55 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
       return null;
     }
 
+    _addTimeToClassHour(lessons);
+
     return DayEntity(date: date, lessons: lessons);
+  }
+
+  void _addTimeToClassHour(List<LessonEntity> lessons) {
+    for (int i = 0; i < lessons.length; i++) {
+      final lesson = lessons[i];
+
+      if (lesson.name?.startsWith('Классный час') ?? false) {
+        LessonEntity? nextLesson;
+        for (int j = i + 1; j < lessons.length; j++) {
+          if (lessons[j].number > lesson.number) {
+            nextLesson = lessons[j];
+            break;
+          }
+        }
+
+        if (nextLesson != null) {
+          final nextStartTime = nextLesson.startTime;
+          TimeOfDay newStartTime;
+          TimeOfDay newEndTime;
+
+          if (nextStartTime.hour == 8 && nextStartTime.minute == 50) {
+            newStartTime = const TimeOfDay(hour: 8, minute: 0);
+            newEndTime = const TimeOfDay(hour: 8, minute: 45);
+          } else if (nextStartTime.hour == 14 && nextStartTime.minute == 50) {
+            newStartTime = const TimeOfDay(hour: 13, minute: 55);
+            newEndTime = const TimeOfDay(hour: 14, minute: 40);
+          } else {
+            continue;
+          }
+
+          final updatedLesson = LessonEntity(
+            number: lesson.number,
+            name: lesson.name,
+            group: lesson.group,
+            subgroup: lesson.subgroup,
+            teacher: lesson.teacher,
+            classroom: lesson.classroom,
+            territory: lesson.territory,
+            startTime: newStartTime,
+            endTime: newEndTime,
+            date: lesson.date,
+          );
+
+          lessons[i] = updatedLesson;
+        }
+      }
+    }
   }
 }
