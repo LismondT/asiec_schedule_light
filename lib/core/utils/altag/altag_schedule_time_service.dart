@@ -8,23 +8,14 @@ class LessonTime {
   final TimeOfDay startTime;
   final TimeOfDay endTime;
 
-  LessonTime(
-    this.number,
-    this.startTime,
-    this.endTime
-  );
+  LessonTime(this.number, this.startTime, this.endTime);
 }
-
 
 class AltagScheduleTimeService {
   final Client _client;
   final String _url = 'https://altag.ru/student/schedule/call_schedule';
 
   final List<List<LessonTime>> _lessonTimes = [[], [], []];
-
-  bool _isInitialized = false;
-
-  bool get isInitialized => _isInitialized; 
 
   AltagScheduleTimeService(this._client);
 
@@ -36,8 +27,6 @@ class AltagScheduleTimeService {
 
     String body = response.body;
     _parseBody(body);
-
-    _isInitialized = true;
   }
 
   void _parseBody(String body) {
@@ -53,7 +42,7 @@ class AltagScheduleTimeService {
 
       if (cells.length > 1 && cells[0].innerHtml.contains('пара')) {
         String lessonName = cells[0].innerHtml;
-        
+
         for (int i = 1; i <= 3; i++) {
           String time = cells[i].innerHtml;
           final times = _parseTime(time);
@@ -62,10 +51,24 @@ class AltagScheduleTimeService {
             continue;
           }
 
-          LessonTime lessonTime = LessonTime(lessonName, times.start, times.end);
-          _lessonTimes[i-1].add(lessonTime);
+          LessonTime lessonTime =
+              LessonTime(lessonName, times.start, times.end);
+          _lessonTimes[i - 1].add(lessonTime);
         }
       }
+    }
+
+    try {
+      _lessonTimes[0].insert(
+          0,
+          LessonTime("Классный час", const TimeOfDay(hour: 8, minute: 0),
+              const TimeOfDay(hour: 8, minute: 45)));
+      _lessonTimes[0].insert(
+          4,
+          LessonTime("Классный час", const TimeOfDay(hour: 13, minute: 55),
+              const TimeOfDay(hour: 14, minute: 40)));
+    } catch (e) {
+      // eh
     }
   }
 
@@ -75,30 +78,26 @@ class AltagScheduleTimeService {
       List<String> startTimeParts = times[0].split(':');
       List<String> endTimeParts = times[1].split(':');
 
-      TimeOfDay startTime = TimeOfDay(hour: int.parse(startTimeParts[0]), minute: int.parse(startTimeParts[1]));
-      TimeOfDay endTime = TimeOfDay(hour: int.parse(endTimeParts[0]), minute: int.parse(endTimeParts[1]));
+      TimeOfDay startTime = TimeOfDay(
+          hour: int.parse(startTimeParts[0]),
+          minute: int.parse(startTimeParts[1]));
+      TimeOfDay endTime = TimeOfDay(
+          hour: int.parse(endTimeParts[0]), minute: int.parse(endTimeParts[1]));
 
       return (start: startTime, end: endTime);
     }
-
     return null;
   }
 
   //weekday - день недели, от 0 (понедельник) до 7 (воскресенье)
   //lessonIndex - номер пары, где 0 (первый классный час), последний (второй классный час)
   LessonTime? getLessonTime(int weekday, int lessonNumber) {
-    //Классный час
-    if (lessonNumber == 0) {
-      return null;
-    }
-
     int listIndex = 0;
-    final int lessonIndex = lessonNumber - 1; 
+    int lessonIndex = weekday == 1 ? lessonNumber : lessonNumber - 1;
 
     if (weekday > 1 && weekday <= 5) {
       listIndex = 1;
-    }
-    else if (weekday == 6) {
+    } else if (weekday == 6) {
       listIndex = 2;
     }
 

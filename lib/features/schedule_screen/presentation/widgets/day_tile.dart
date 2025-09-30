@@ -1,14 +1,16 @@
 import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_info_popup.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class Daytile extends StatelessWidget {
+class DayTile extends StatelessWidget {
   final DayEntity day;
+  final ScheduleRequestType type;
 
-  const Daytile({super.key, required this.day});
+  const DayTile({super.key, required this.day, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class Daytile extends StatelessWidget {
                   highlightColor:
                       Theme.of(context).colorScheme.surfaceContainerHighest,
                   onTap: () => _showLessonInfoDialog(context, lesson),
-                  child: LessonTile(lesson: lesson)),
+                  child: LessonTile(lesson: lesson, type: type)),
             ),
           );
         })

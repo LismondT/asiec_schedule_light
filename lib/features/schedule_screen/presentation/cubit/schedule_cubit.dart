@@ -41,7 +41,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
         try {
           final localSchedule = await _getLocalSchedule();
           if (localSchedule.days.isNotEmpty) {
-            emit(ScheduleStateLoaded(localSchedule, isLocalSchedule: true));
+            emit(ScheduleStateLoaded(localSchedule, type, isLocalSchedule: true));
           } else {
             isLocalScheduleEmpty = true;
           }
@@ -56,7 +56,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
         if (schedule.days.isNotEmpty) {
           await _saveLocalSchedule(schedule);
-          emit(ScheduleStateLoaded(schedule));
+          emit(ScheduleStateLoaded(schedule, type));
         } else {
           emit(ScheduleStateEmpty());
         }

@@ -1,10 +1,13 @@
 import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
+import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 
 class LessonTile extends StatelessWidget {
   final LessonEntity lesson;
+  final ScheduleRequestType type;
 
-  const LessonTile({super.key, required this.lesson});
+  const LessonTile({super.key, required this.lesson, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +103,7 @@ class LessonTile extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  'Ауд. ${lesson.classroom}, ${lesson.territory}',
+                  _getSecondaryInfo(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -115,5 +118,25 @@ class LessonTile extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _getSecondaryInfo() {
+    final forGroupStr = 'Ауд. ${lesson.classroom}, ${lesson.territory}';
+    
+    String groupInfo = lesson.group ?? '???';
+    if (isAltag) {
+      if (lesson.subgroup == 1) {
+        groupInfo = groupInfo.replaceFirst(' п. 1', '');
+      } else if (lesson.subgroup == 2) {
+        groupInfo = groupInfo.replaceFirst(' п. 2', '');
+      }
+    }
+    final forTeacherStr = 'Гр. $groupInfo, Ауд. ${lesson.classroom}, ${lesson.territory}';
+    final forAuditoryStr = 'Гр. $groupInfo, Пр. ${lesson.teacher}';
+    return switch(type) {
+      ScheduleRequestType.groups => forGroupStr,
+      ScheduleRequestType.teachers => forTeacherStr,
+      ScheduleRequestType.classrooms => forAuditoryStr,
+    };
   }
 }

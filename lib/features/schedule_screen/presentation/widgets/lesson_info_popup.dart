@@ -53,7 +53,7 @@ class LessonInfoPopup extends StatelessWidget {
                     title: 'Основная информация',
                     children: [
                       _buildInfoRow(context, 'Название', _lesson.name ?? 'Не указано'),
-                      _buildInfoRow(context, 'группа', _lesson.group ?? 'Не указана'),
+                      _buildInfoRow(context, 'Группа', _lesson.group ?? 'Не указана'),
                       if (_lesson.subgroup > 0)
                         _buildInfoRow(context, 'Подгруппа', _lesson.subgroup.toString()),
                       _buildInfoRow(context, 'Преподаватель', _lesson.teacher ?? 'Не указан'),
@@ -67,7 +67,7 @@ class LessonInfoPopup extends StatelessWidget {
                     context,
                     title: 'Время',
                     children: [
-                      _buildInfoRow(context, 'дата', DateFormat("dd MMMM yyyy", "Ru_ru").format(_lesson.date!)),
+                      _buildInfoRow(context, 'Дата', DateFormat("dd MMMM yyyy", "Ru_ru").format(_lesson.date!)),
                       _buildInfoRow(context, 'Начало', _lesson.startTime.format(context)),
                       _buildInfoRow(context, 'Конец', _lesson.endTime.format(context)),
                       _buildInfoRow(context, 'Длительность', _lesson.duration().format(context)),

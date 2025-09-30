@@ -1,4 +1,5 @@
 import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit_states.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/day_tile.dart';
@@ -73,7 +74,7 @@ class ScheduleScreen extends StatelessWidget {
             case ScheduleStateLoading():
               return _buildLoadingBody();
             case ScheduleStateLoaded():
-              return _buildDoneBody(state.data);
+              return _buildDoneBody(state.data, state.type);
             case ScheduleStateEmpty():
               return _buildEmptyScreen(context);
             case ScheduleStateIdUnselected():
@@ -149,10 +150,10 @@ class ScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDoneBody(ScheduleEntity schedule) {
+  Widget _buildDoneBody(ScheduleEntity schedule, ScheduleRequestType type) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-        (context, index) => Daytile(day: schedule.days[index]),
+        (context, index) => DayTile(day: schedule.days[index], type: type),
         childCount: schedule.days.length,
       ),
     );
@@ -175,7 +176,7 @@ class ScheduleScreen extends StatelessWidget {
 
   Widget _buildEmptyScreen(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Container(
+      child: SizedBox(
         height: 400,
         child: Center(
           child: Padding(

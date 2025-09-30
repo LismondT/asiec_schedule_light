@@ -1,4 +1,4 @@
-
+import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
 import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
@@ -6,12 +6,9 @@ import 'package:asiec_schedule/core/utils/altag/altag_schedule_time_service.dart
 import 'package:asiec_schedule/features/schedule_screen/data/data_sources/remote/schedule_remote_datasource.dart';
 import 'package:flutter/material.dart';
 import 'package:html/dom.dart';
-import 'package:http/http.dart';
 import 'package:html/parser.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-
-import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
-
 
 class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
   final String _baseUrl = 'https://schedule.altag.ru/ras.php';
@@ -21,7 +18,8 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
   AltagScheduleRemoteDatasource(this._client, this._scheduleTime);
 
   @override
-  Future<ScheduleEntity> getSchedule(DateTime start, int days, ScheduleRequestType type, String id) async {
+  Future<ScheduleEntity> getSchedule(
+      DateTime start, int days, ScheduleRequestType type, String id) async {
     int nullDayCount = 0;
 
     final List<DayEntity> scheduleDays = [];
@@ -36,13 +34,13 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
       DayEntity? dayEntity = await _getDay(day, type, id);
 
       if (dayEntity == null) {
-        if(nullDayCount > 3) {
+        if (nullDayCount > 3) {
           break;
         }
         nullDayCount++;
         continue;
       }
-      
+
       scheduleDays.add(dayEntity);
 
       await Future.delayed(Duration(milliseconds: 125));
@@ -51,31 +49,41 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
     final firstDate = scheduleDays.firstOrNull?.date ?? DateTime(1);
     final lastDate = scheduleDays.lastOrNull?.date ?? DateTime(1);
     final schedule = ScheduleEntity(
-        firstDate: firstDate,
-        lastDate: lastDate,
-        days: scheduleDays);
+        firstDate: firstDate, lastDate: lastDate, days: scheduleDays);
     return schedule;
   }
 
-  Future<DayEntity?> _getDay(DateTime date, ScheduleRequestType type, String id) async {
-    final Response response = await _client.post(
-      Uri.parse(_baseUrl),
-      headers: {
-        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-        "User-Agent": "AltagScheduleAndroidApp",
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: _getData(date, type, id)
-    );
+  Future<DayEntity?> _getDay(
+      DateTime date, ScheduleRequestType type, String id) async {
+    final Response response = await _client.post(Uri.parse(_baseUrl),
+        headers: {
+          "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+          "User-Agent": "AltagScheduleAndroidApp",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: _getData(date, type, id));
 
     String body = response.body;
     return _parseBody(body, date);
   }
 
-  Map<String, String> _getData(DateTime date, ScheduleRequestType type, String id) {
+  Map<String, String> _getData(
+      DateTime date, ScheduleRequestType type, String id) {
+    String idField;
+    switch (type) {
+      case ScheduleRequestType.groups:
+        idField = 'gruppa';
+        break;
+      case ScheduleRequestType.teachers:
+        idField = 'prepod';
+        break;
+      case ScheduleRequestType.classrooms:
+        idField = 'auditoria';
+    }
+
     return {
       'dostup': 'true',
-      'gruppa': id,
+      idField: id,
       'calendar': DateFormat('yyyy-MM-dd').format(date),
       'ras': switch (type) {
         ScheduleRequestType.groups => 'GRUP',
@@ -88,16 +96,21 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
   DayEntity? _parseBody(String body, DateTime date) {
     final Document document = parse(body);
     final dayElements = document.querySelectorAll('.table-body_item');
-    
+
     List<LessonEntity> lessons = [];
 
     for (final dayElement in dayElements) {
-      String numberStr = dayElement.querySelector('.time')?.text.split(':')[1].trim() ?? '0';
-      String group = dayElement.querySelector('.group')?.text.split(':')[1].trim() ?? '';
+      String numberStr =
+          dayElement.querySelector('.time')?.text.split(':')[1].trim() ?? '0';
+      String group =
+          dayElement.querySelector('.group')?.text.split(':')[1].trim() ?? '';
       String name = dayElement.querySelector('.lesson')?.text.trim() ?? '';
       String teacher = dayElement.querySelector('.teacher')?.text.trim() ?? '';
-      String territory = dayElement.querySelector('.territory')?.text.trim() ?? '';
-      String classroom = dayElement.querySelector('.classroom')?.text.split(':')[1].trim() ?? '';
+      String territory =
+          dayElement.querySelector('.territory')?.text.trim() ?? '';
+      String classroom =
+          dayElement.querySelector('.classroom')?.text.split(':')[1].trim() ??
+              '';
 
       int number = int.parse(numberStr);
       LessonTime? time = _scheduleTime.getLessonTime(date.weekday, number);
@@ -110,24 +123,23 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
       }
 
       lessons.add(LessonEntity(
-        number: number,
-        name: name,
-        group: group,
-        subgroup: subgroup,
-        teacher: teacher,
-        classroom: classroom,
-        territory: territory,
-        startTime: time?.startTime ?? TimeOfDay(hour: 0, minute: 0),
-        endTime: time?.endTime ?? TimeOfDay(hour: 0, minute: 0),
-        date: date)
-      );
+          number: number,
+          name: name,
+          group: group,
+          subgroup: subgroup,
+          teacher: teacher,
+          classroom: classroom,
+          territory: territory,
+          startTime: time?.startTime ?? TimeOfDay(hour: 0, minute: 0),
+          endTime: time?.endTime ?? TimeOfDay(hour: 0, minute: 0),
+          date: date));
     }
 
     if (lessons.isEmpty) {
       return null;
     }
 
-    _addTimeToClassHour(lessons);
+    //_addTimeToClassHour(lessons);
 
     return DayEntity(date: date, lessons: lessons);
   }

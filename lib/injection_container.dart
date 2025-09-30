@@ -40,9 +40,9 @@ import 'features/schedule_screen/data/repository/schedule_repository_impl.dart';
 import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.dart';
 
 final sl = GetIt.instance;
-const isAltag = true;
-const AppName = isAltag ? "Altag Schedule" : "Asiec Schedule";
-const AppVersion = "3.0.0";
+const isAltag = false;
+const appName = isAltag ? "Altag Schedule" : "Asiec Schedule";
+String appVersion = "3.0.2";
 
 Future<void> initializeDependencies() async {
   final dio = Dio(BaseOptions());
