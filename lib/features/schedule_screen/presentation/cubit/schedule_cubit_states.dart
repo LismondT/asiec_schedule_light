@@ -15,6 +15,13 @@ class ScheduleStateLoaded extends ScheduleState {
   ScheduleStateLoaded(this.data, this.type, {this.isLocalSchedule = false});
 }
 
+class ScheduleStateLoadedByDate extends ScheduleState {
+  final ScheduleEntity data;
+  final ScheduleRequestType type;
+
+  ScheduleStateLoadedByDate(this.data, this.type);
+}
+
 class ScheduleStateEmpty extends ScheduleState {}
 
 class ScheduleStateIdUnselected extends ScheduleState {}

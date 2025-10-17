@@ -10,6 +10,7 @@ import 'package:asiec_schedule/features/schedule_screen/data/data_sources/local/
 import 'package:asiec_schedule/features/schedule_screen/domain/repository/schedule_repository.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_default_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_local_schedule.dart';
+import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/save_local_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/local_ids_datasource.dart';
@@ -40,9 +41,9 @@ import 'features/schedule_screen/data/repository/schedule_repository_impl.dart';
 import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.dart';
 
 final sl = GetIt.instance;
-const isAltag = false;
+const isAltag = true;
 const appName = isAltag ? "Altag Schedule" : "Asiec Schedule";
-String appVersion = "3.0.2";
+String appVersion = "3.0.3";
 
 Future<void> initializeDependencies() async {
   final dio = Dio(BaseOptions());
@@ -93,6 +94,7 @@ Future<void> initializeDependencies() async {
   //UseCases
   //--Schedule
   sl.registerSingleton<GetDefaultSchedule>(GetDefaultSchedule(sl()));
+  sl.registerSingleton(GetSchedule(sl()));
   sl.registerSingleton(GetLocalSchedule(sl()));
   sl.registerSingleton(SaveLocalSchedule(sl()));
 
@@ -109,7 +111,7 @@ Future<void> initializeDependencies() async {
   //Cubits
   sl.registerFactory<ThemeCubit>(() => ThemeCubit(sl()));
   sl.registerFactory<ScheduleCubit>(
-      () => ScheduleCubit(sl(), sl(), sl(), sl()));
+      () => ScheduleCubit(sl(), sl(), sl(), sl(), sl()));
   sl.registerFactory<SettingsCubit>(
       () => SettingsCubit(sl(), sl(), sl(), sl(), sl()));
   sl.registerFactory(() => LectureTimerCubit(sl()));

@@ -15,6 +15,10 @@ class DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String dateTitle = DateFormat('EEEE, d MMMM', 'ru_RU').format(day.date);
+    dateTitle =
+        dateTitle.replaceRange(0, 1, dateTitle.characters.first.toUpperCase());
+
+    final isMonday = dateTitle.contains('Понедельник');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -23,7 +27,11 @@ class DayTile extends StatelessWidget {
           padding: EdgeInsets.only(left: 20, top: 12, bottom: 12),
           child: Text(dateTitle,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline, fontSize: 18)),
+                  color: isMonday
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : Theme.of(context).colorScheme.outline,
+                  fontSize: 18,
+                  fontWeight: isMonday ? FontWeight.bold : null)),
         ),
         ...day.lessons.map((lesson) {
           return Material(
@@ -47,7 +55,6 @@ class DayTile extends StatelessWidget {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-
         context: context,
         builder: (context) => LessonInfoPopup(lesson));
   }

@@ -54,6 +54,8 @@ class SettingsScreen extends StatelessWidget {
           _buildRequestTypeCard(context, settings),
           const SizedBox(height: 8),
           _buildRequestIdCard(context, settings, ids),
+          const SizedBox(height: 8),
+          _buildTrimScheduleCard(context, settings),
           const SizedBox(height: 32),
           _buildSectionHeader('Обратная связь'),
           _buildTelegramCard(context),
@@ -229,6 +231,34 @@ class SettingsScreen extends StatelessWidget {
         subtitle: Text(idKey.isEmpty ? 'Не выбрано' : 'Нажмите для изменения'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => _showRequestIdDialog(context, currentIds),
+      ),
+    );
+  }
+
+  Widget _buildTrimScheduleCard(BuildContext context, SettingsEntity settings) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.calendar_today,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        title: const Text('Обрезать расписание'),
+        subtitle: const Text('Показывать резервное расписание с текущего дня'),
+        trailing: Switch(
+          value: settings.startSavedScheduleByToday,
+          onChanged: (value) => context.read<SettingsCubit>().changeTrimSchedule(value),
+          activeThumbColor: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

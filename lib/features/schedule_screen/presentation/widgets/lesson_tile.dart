@@ -19,42 +19,32 @@ class LessonTile extends StatelessWidget {
 
     return Row(
       children: [
-        // Time column with subgroup indicator
         Container(
           decoration: BoxDecoration(
             border: BorderDirectional(
               end: BorderSide(
                 color: isSubgroup ? subgroupColor : colorScheme.primary,
-                width: isSubgroup ? 3 : 1,
+                width: isSubgroup ? 2 : 1,
               ),
             ),
           ),
+          width: 58,
           child: Column(
             children: [
-              if (isSubgroup)
-                Container(
-                  width: 40,
-                  height: 4,
-                  color: subgroupColor,
-                ),
               Padding(
-                padding: EdgeInsets.fromLTRB(12, 12, isSubgroup ? 11 : 12, 12),
+                padding: EdgeInsets.symmetric(vertical: 12),
                 child: Column(
                   children: [
                     Text(
                       lesson.startTime.format(context),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color:
-                            isSubgroup ? colorScheme.onPrimaryContainer : null,
                       ),
                     ),
                     Text(
                       lesson.endTime.format(context),
                       style: TextStyle(
-                        color: isSubgroup
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.outline,
+                        color: colorScheme.outline,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -122,7 +112,7 @@ class LessonTile extends StatelessWidget {
 
   String _getSecondaryInfo() {
     final forGroupStr = 'Ауд. ${lesson.classroom}, ${lesson.territory}';
-    
+
     String groupInfo = lesson.group ?? '???';
     if (isAltag) {
       if (lesson.subgroup == 1) {

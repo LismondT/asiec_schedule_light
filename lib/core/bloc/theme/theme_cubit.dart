@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 
 import 'package:asiec_schedule/core/bloc/theme/theme_state.dart';
@@ -11,7 +10,7 @@ class ThemeCubit extends Cubit<ThemeState> {
   final SettingsRepository repository;
 
   ThemeCubit(this.repository) : super(const ThemeState(Brightness.light)) {
-    _heckSelectedTheme();
+    _checkSelectedTheme();
   }
 
   Future<void> setThemeBrightness(Brightness brightness) async {
@@ -20,27 +19,23 @@ class ThemeCubit extends Cubit<ThemeState> {
 
       SettingsEntity prevSettings = await repository.getSettings();
 
-      await repository.saveSettings(
-        SettingsEntity(
+      await repository.saveSettings(SettingsEntity(
           isDarkMode: brightness == Brightness.dark,
           requestType: prevSettings.requestType,
-          requestId: prevSettings.requestId
-        )
-      );
+          requestId: prevSettings.requestId,
+          startSavedScheduleByToday: prevSettings.startSavedScheduleByToday));
     } catch (e) {
       log(e.toString());
     }
   }
 
-  void _heckSelectedTheme() async {
+  void _checkSelectedTheme() async {
     try {
-      final settings = await repository.getSettings(); 
-      final brightness = settings.isDarkMode
-        ? Brightness.dark
-        : Brightness.light;
+      final settings = await repository.getSettings();
+      final brightness =
+          settings.isDarkMode ? Brightness.dark : Brightness.light;
       emit(ThemeState(brightness));
-    }
-    catch (e) {
+    } catch (e) {
       log(e.toString());
     }
   }

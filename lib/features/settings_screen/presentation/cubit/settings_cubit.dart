@@ -54,7 +54,10 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
 
     final updatedSettings = SettingsEntity(
-        isDarkMode: settings.isDarkMode, requestType: type, requestId: '');
+        isDarkMode: settings.isDarkMode,
+        requestType: type,
+        requestId: '',
+        startSavedScheduleByToday: settings.startSavedScheduleByToday);
     await saveSettings(updatedSettings);
   }
 
@@ -63,7 +66,18 @@ class SettingsCubit extends Cubit<SettingsState> {
     final updatedSettings = SettingsEntity(
         isDarkMode: settings.isDarkMode,
         requestType: settings.requestType,
-        requestId: id);
+        requestId: id,
+        startSavedScheduleByToday: settings.startSavedScheduleByToday);
+    await saveSettings(updatedSettings);
+  }
+
+  Future<void> changeTrimSchedule(bool value) async {
+    final settings = await _getSettings();
+    final updatedSettings = SettingsEntity(
+        isDarkMode: settings.isDarkMode,
+        requestType: settings.requestType,
+        requestId: settings.requestId,
+        startSavedScheduleByToday: value);
     await saveSettings(updatedSettings);
   }
 }

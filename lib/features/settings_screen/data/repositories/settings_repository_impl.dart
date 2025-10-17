@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/local/local_ids_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/remote_ids_datasource.dart';
@@ -19,7 +17,7 @@ class SettingsRepositoryImpl extends SettingsRepository {
   static const _isDarkThemeSelectedKey = 'dark_theme_selected';
   static const _requestTypeKey = 'request_type';
   static const _requestIdKey = 'request_id';
-  static const _idsKey = 'ids_key';
+  static const _savedScheduleByToday = 'saved_schedule_by_today';
 
   @override
   Future<SettingsEntity> getSettings() async {
@@ -28,16 +26,20 @@ class SettingsRepositoryImpl extends SettingsRepository {
       final requestType = ScheduleRequestType
           .values[await preferences.getInt(_requestTypeKey) ?? 0];
       final requestId = await preferences.getString(_requestIdKey);
+      final startSavedScheduleByToday =
+          await preferences.getBool(_savedScheduleByToday);
 
       return SettingsEntity(
           isDarkMode: isDarkTheme ?? false,
           requestType: requestType,
-          requestId: requestId ?? '');
+          requestId: requestId ?? '',
+          startSavedScheduleByToday: startSavedScheduleByToday ?? true);
     } catch (e) {
       final settings = SettingsEntity(
           isDarkMode: false,
           requestType: ScheduleRequestType.groups,
-          requestId: '');
+          requestId: '',
+          startSavedScheduleByToday: true);
 
       await saveSettings(settings);
       return settings;
@@ -49,6 +51,8 @@ class SettingsRepositoryImpl extends SettingsRepository {
     await preferences.setBool(_isDarkThemeSelectedKey, settings.isDarkMode);
     await preferences.setInt(_requestTypeKey, settings.requestType.index);
     await preferences.setString(_requestIdKey, settings.requestId);
+    await preferences.setBool(
+        _savedScheduleByToday, settings.startSavedScheduleByToday);
   }
 
   @override
