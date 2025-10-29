@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(builder: (context, state) {
         return MaterialApp.router(
-          title: 'Asiec Schedule Light',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.deepPurple,

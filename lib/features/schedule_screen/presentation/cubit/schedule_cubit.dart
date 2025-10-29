@@ -43,7 +43,8 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
       if (!isRequestIdChanged) {
         try {
-          final localSchedule = await _getLocalSchedule();
+          final localSchedule = await _getLocalSchedule(
+              startByToday: settings.startSavedScheduleByToday);
           if (localSchedule.days.isNotEmpty) {
             emit(ScheduleStateLoaded(localSchedule, type,
                 isLocalSchedule: true));

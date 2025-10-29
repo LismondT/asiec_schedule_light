@@ -1,6 +1,6 @@
+import 'package:asiec_schedule/core/config/flavor_config.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
-import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 
 class LessonTile extends StatelessWidget {
@@ -114,16 +114,17 @@ class LessonTile extends StatelessWidget {
     final forGroupStr = 'Ауд. ${lesson.classroom}, ${lesson.territory}';
 
     String groupInfo = lesson.group ?? '???';
-    if (isAltag) {
+    if (FlavorConfig.instance.isAltag) {
       if (lesson.subgroup == 1) {
         groupInfo = groupInfo.replaceFirst(' п. 1', '');
       } else if (lesson.subgroup == 2) {
         groupInfo = groupInfo.replaceFirst(' п. 2', '');
       }
     }
-    final forTeacherStr = 'Гр. $groupInfo, Ауд. ${lesson.classroom}, ${lesson.territory}';
+    final forTeacherStr =
+        'Гр. $groupInfo, Ауд. ${lesson.classroom}, ${lesson.territory}';
     final forAuditoryStr = 'Гр. $groupInfo, Пр. ${lesson.teacher}';
-    return switch(type) {
+    return switch (type) {
       ScheduleRequestType.groups => forGroupStr,
       ScheduleRequestType.teachers => forTeacherStr,
       ScheduleRequestType.classrooms => forAuditoryStr,

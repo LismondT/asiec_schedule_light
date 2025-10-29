@@ -1,3 +1,4 @@
+import 'package:asiec_schedule/core/config/flavor_config.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/github_update_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/data/data_sources/remote/update_remote_datasource.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/entities/update_info.dart';
@@ -12,7 +13,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
   @override
   Future<UpdateInfo> checkForUpdate() async {
     try {
-      final currentVersion = appVersion;
+      final currentVersion = FlavorConfig.instance.version;
 
       final latestRelease = await remoteDataSource.getLatestRelease();
 
@@ -40,7 +41,7 @@ class UpdateRepositoryImpl implements UpdateRepository {
       return UpdateInfo.noUpdate(currentVersion: currentVersion);
     } catch (e) {
       return UpdateInfo.error(
-        currentVersion: appVersion,
+        currentVersion: FlavorConfig.instance.version,
         error: e.toString(),
       );
     }

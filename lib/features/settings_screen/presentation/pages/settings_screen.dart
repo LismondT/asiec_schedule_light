@@ -1,12 +1,13 @@
 import 'package:asiec_schedule/core/bloc/theme/theme_cubit.dart';
+import 'package:asiec_schedule/core/config/flavor_config.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/core/presentation/widgets/app_bar_title.dart';
+import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/entities/setting_ids_entity.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/entities/settings_entity.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_states.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/pages/request_id_dialog.dart';
-import 'package:asiec_schedule/injection_container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -256,7 +257,10 @@ class SettingsScreen extends StatelessWidget {
         subtitle: const Text('Показывать резервное расписание с текущего дня'),
         trailing: Switch(
           value: settings.startSavedScheduleByToday,
-          onChanged: (value) => context.read<SettingsCubit>().changeTrimSchedule(value),
+          onChanged: (value) async {
+            await context.read<SettingsCubit>().changeTrimSchedule(value);
+            context.read<ScheduleCubit>().loadDefaultSchedule();
+          },
           activeThumbColor: Theme.of(context).colorScheme.primary,
         ),
       ),
@@ -295,7 +299,7 @@ class SettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              appName,
+              FlavorConfig.instance.name,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -303,7 +307,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             SizedBox(height: 4),
             Text(
-              'Версия $appVersion',
+              'Версия: ${FlavorConfig.instance.displayVersion}',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -333,8 +337,7 @@ class SettingsScreen extends StatelessWidget {
         'tg://resolve?domain=LismondT'; // Замените на ваш username
 
     // Резервная ссылка для веб-версии
-    const telegramWebUrl =
-        'https://t.me/LismondT'; // Замените на ваш username
+    const telegramWebUrl = 'https://t.me/LismondT'; // Замените на ваш username
 
     try {
       // Сначала пробуем открыть в приложении

@@ -14,12 +14,19 @@ class GetLocalSchedule {
     }
 
     final today = DateTime.now();
-    final trimmedSchedule = ScheduleEntity(
-        firstDate: today,
-        lastDate: schedule.lastDate,
-        days:
-            schedule.days.skipWhile((day) => day.date.isAfter(today)).toList());
+    final todayDate = DateTime(today.year, today.month, today.day);
 
-    return trimmedSchedule;
+    final trimmedDays = schedule.days
+        .where((day) {
+      final dayDate = DateTime(day.date.year, day.date.month, day.date.day);
+      return !dayDate.isBefore(todayDate);
+    })
+        .toList();
+
+    return ScheduleEntity(
+      firstDate: trimmedDays.isNotEmpty ? trimmedDays.first.date : today,
+      lastDate: schedule.lastDate,
+      days: trimmedDays,
+    );
   }
 }

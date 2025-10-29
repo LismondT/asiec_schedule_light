@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:asiec_schedule/core/bloc/theme/theme_cubit.dart';
+import 'package:asiec_schedule/core/config/flavor_config.dart';
 import 'package:asiec_schedule/core/network/http_override.dart';
 import 'package:asiec_schedule/core/utils/altag/altag_schedule_time_service.dart';
 import 'package:asiec_schedule/features/schedule_screen/data/data_sources/local/schedule_local_datasource.dart';
@@ -41,11 +42,10 @@ import 'features/schedule_screen/data/repository/schedule_repository_impl.dart';
 import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.dart';
 
 final sl = GetIt.instance;
-const isAltag = true;
-const appName = isAltag ? "Altag Schedule" : "Asiec Schedule";
-String appVersion = "3.0.3";
 
 Future<void> initializeDependencies() async {
+  await FlavorConfig.instance.initializeVersion();
+
   final dio = Dio(BaseOptions());
 
   (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
@@ -71,7 +71,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<ScheduleLocalDatasource>(
       ScheduleSharedPreferencesDatasource(sl()));
 
-  if (isAltag) {
+  if (FlavorConfig.instance.isAltag) {
     //RemoteDatasources
     final timeService = AltagScheduleTimeService(sl());
     await timeService.initialize();
@@ -79,7 +79,9 @@ Future<void> initializeDependencies() async {
     sl.registerSingleton<ScheduleRemoteDatasource>(
         AltagScheduleRemoteDatasource(sl(), sl()));
     sl.registerSingleton<RemoteIdsDatasource>(AltagIdsDatasource(sl()));
-  } else {
+  }
+
+  if (FlavorConfig.instance.isAsiec) {
     //RemoteDatasources
     sl.registerSingleton<ScheduleRemoteDatasource>(
         AsiecScheduleRemoteDatasource(sl()));
