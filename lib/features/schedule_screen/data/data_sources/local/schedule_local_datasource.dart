@@ -1,7 +1,7 @@
-import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule.dart';
 
 abstract class ScheduleLocalDatasource {
-  Future<ScheduleEntity> getSchedule();
+  Future<Schedule> getSchedule();
 
-  Future<void> saveSchedule(ScheduleEntity schedule);
+  Future<void> saveSchedule(Schedule schedule);
 }

@@ -1,11 +1,11 @@
-import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/day.dart';
 
-class ScheduleEntity {
+class Schedule {
   final DateTime firstDate;
   final DateTime lastDate;
-  final List<DayEntity> days;
+  final List<Day> days;
 
-  ScheduleEntity({
+  Schedule({
     required this.firstDate,
     required this.lastDate,
     required this.days,
@@ -19,13 +19,12 @@ class ScheduleEntity {
     };
   }
 
-  // Создание из JSON
-  factory ScheduleEntity.fromJson(Map<String, dynamic> json) {
-    return ScheduleEntity(
+  factory Schedule.fromJson(Map<String, dynamic> json) {
+    return Schedule(
       firstDate: DateTime.parse(json['firstDate'] as String),
       lastDate: DateTime.parse(json['lastDate'] as String),
       days: (json['days'] as List)
-          .map((dayJson) => DayEntity.fromJson(dayJson as Map<String, dynamic>))
+          .map((dayJson) => Day.fromJson(dayJson as Map<String, dynamic>))
           .toList(),
     );
   }

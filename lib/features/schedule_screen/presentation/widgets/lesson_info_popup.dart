@@ -1,9 +1,9 @@
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class LessonInfoPopup extends StatelessWidget {
-  final LessonEntity _lesson;
+  final Lesson _lesson;
 
   const LessonInfoPopup(this._lesson, {super.key});
 

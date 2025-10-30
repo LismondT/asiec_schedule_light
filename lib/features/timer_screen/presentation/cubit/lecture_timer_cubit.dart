@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:asiec_schedule/features/timer_screen/domain/use_cases/get_current_day.dart';
 import 'package:asiec_schedule/features/timer_screen/presentation/cubit/lecture_timer_states.dart';
 import 'package:bloc/bloc.dart';
@@ -49,7 +49,7 @@ class LectureTimerCubit extends Cubit<LectureTimerState> {
       return;
     }
 
-    LessonEntity? currentLesson;
+    Lesson? currentLesson;
     for (final lesson in todaySchedule.lessons) {
       final lessonStart = _getDateTimeFromTimeOfDay(lesson.startTime, now);
       final lessonEnd = _getDateTimeFromTimeOfDay(lesson.endTime, now);
@@ -81,8 +81,8 @@ class LectureTimerCubit extends Cubit<LectureTimerState> {
     }
   }
 
-  LessonEntity? _findNextLesson(
-      List<LessonEntity> lessons, LessonEntity currentLesson) {
+  Lesson? _findNextLesson(
+      List<Lesson> lessons, Lesson currentLesson) {
     final currentIndex = lessons.indexOf(currentLesson);
     if (currentIndex != -1 && currentIndex < lessons.length - 1) {
       return lessons[currentIndex + 1];
@@ -91,8 +91,8 @@ class LectureTimerCubit extends Cubit<LectureTimerState> {
   }
 
   void _findFreeTimePeriod(
-      List<LessonEntity> lessons, TimeOfDay currentTime, DateTime now) {
-    LessonEntity? nextLesson;
+      List<Lesson> lessons, TimeOfDay currentTime, DateTime now) {
+    Lesson? nextLesson;
     TimeOfDay freeTimeStart = currentTime;
     TimeOfDay freeTimeEnd = currentTime;
 

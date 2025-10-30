@@ -1,4 +1,4 @@
-import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/repository/schedule_repository.dart';
 
 class SaveLocalSchedule {
@@ -6,7 +6,7 @@ class SaveLocalSchedule {
 
   SaveLocalSchedule(this._repository);
 
-  Future<void> call(ScheduleEntity schedule) async {
+  Future<void> call(Schedule schedule) async {
     await _repository.saveLocalSchedule(schedule);
   }
 }

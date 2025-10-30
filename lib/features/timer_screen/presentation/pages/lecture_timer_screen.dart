@@ -1,4 +1,4 @@
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/core/presentation/widgets/app_bar_title.dart';
 import 'package:asiec_schedule/features/timer_screen/presentation/cubit/lecture_timer_cubit.dart';
@@ -716,7 +716,7 @@ class LectureTimerScreen extends StatelessWidget {
 
   Widget _buildLessonPreviewCard(
     BuildContext context,
-    LessonEntity lesson, {
+    Lesson lesson, {
     required ScheduleRequestType requestType,
     bool isNext = false,
   }) {

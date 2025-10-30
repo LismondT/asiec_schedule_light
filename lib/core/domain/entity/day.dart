@@ -1,10 +1,10 @@
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 
-class DayEntity {
+class Day {
   final DateTime date;
-  final List<LessonEntity> lessons;
+  final List<Lesson> lessons;
 
-  DayEntity({required this.date, required this.lessons});
+  Day({required this.date, required this.lessons});
 
   Map<String, dynamic> toJson() {
     return {
@@ -14,12 +14,12 @@ class DayEntity {
   }
 
   // Создание из JSON
-  factory DayEntity.fromJson(Map<String, dynamic> json) {
-    return DayEntity(
+  factory Day.fromJson(Map<String, dynamic> json) {
+    return Day(
       date: DateTime.parse(json['date'] as String),
       lessons: (json['lessons'] as List)
           .map((lessonJson) =>
-              LessonEntity.fromJson(lessonJson as Map<String, dynamic>))
+              Lesson.fromJson(lessonJson as Map<String, dynamic>))
           .toList(),
     );
   }

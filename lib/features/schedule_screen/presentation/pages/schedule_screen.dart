@@ -1,10 +1,12 @@
-import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/cubit/schedule_cubit_states.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/day_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../widgets/bouncing_icon.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -418,9 +420,9 @@ class ScheduleScreen extends StatelessWidget {
                       child: Text(
                         'Загружаем расписание',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -506,8 +508,8 @@ class ScheduleScreen extends StatelessWidget {
                             width: double.infinity,
                             height: 16,
                             decoration: BoxDecoration(
-                              color: colorScheme.onSurfaceVariant
-                                  .withOpacity(0.1),
+                              color:
+                                  colorScheme.onSurfaceVariant.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -516,8 +518,8 @@ class ScheduleScreen extends StatelessWidget {
                             width: 120,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: colorScheme.onSurfaceVariant
-                                  .withOpacity(0.1),
+                              color:
+                                  colorScheme.onSurfaceVariant.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
@@ -534,10 +536,10 @@ class ScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDoneBody(ScheduleEntity schedule, ScheduleRequestType type) {
+  Widget _buildDoneBody(Schedule schedule, ScheduleRequestType type) {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
-            (context, index) => AnimatedDayTile(
+        (context, index) => AnimatedDayTile(
           day: schedule.days[index],
           type: type,
           index: index,
@@ -585,19 +587,20 @@ class ScheduleScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Выберите группу',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Перейдите в настройки, чтобы выбрать группу, преподавателя или аудиторию',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.4,
-                        ),
+                              color: colorScheme.onSurfaceVariant,
+                              height: 1.4,
+                            ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -711,7 +714,8 @@ class ScheduleScreen extends StatelessWidget {
                     const SizedBox(width: 20),
                     BouncingIcon(icon: Icons.book_rounded, delay: 200),
                     const SizedBox(width: 20),
-                    BouncingIcon(icon: Icons.sports_esports_rounded, delay: 400),
+                    BouncingIcon(
+                        icon: Icons.sports_esports_rounded, delay: 400),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -959,88 +963,6 @@ class _PulsingDotState extends State<PulsingDot>
             decoration: BoxDecoration(
               color: widget.color,
               shape: BoxShape.circle,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-}
-
-// Прыгающая иконка
-class BouncingIcon extends StatefulWidget {
-  final IconData icon;
-  final int delay;
-
-  const BouncingIcon({
-    super.key,
-    required this.icon,
-    required this.delay,
-  });
-
-  @override
-  State<BouncingIcon> createState() => _BouncingIconState();
-}
-
-class _BouncingIconState extends State<BouncingIcon>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.elasticOut,
-      ),
-    );
-
-    if (widget.delay > 0) {
-      Future.delayed(Duration(milliseconds: widget.delay), () {
-        if (mounted) _controller.repeat(reverse: true);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, -10 * _animation.value),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.7),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.shadow.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              widget.icon,
-              size: 24,
-              color: colorScheme.onSurfaceVariant,
             ),
           ),
         );

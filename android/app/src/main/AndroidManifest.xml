@@ -31,7 +31,6 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-	<uses-permission android:name="android.permission.INTERNET"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
@@ -42,8 +41,5 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <package android:name="org.telegram.messenger" />
-        <package android:name="org.telegram.plus" />
-        <package android:name="org.telegram.messenger.web" />
     </queries>
 </manifest>

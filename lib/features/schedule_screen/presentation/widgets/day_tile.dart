@@ -1,13 +1,14 @@
-import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/day.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_info_popup.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_tile.dart';
+import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_with_subgroup_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DayTile extends StatelessWidget {
-  final DayEntity day;
+  final Day day;
   final ScheduleRequestType type;
 
   const DayTile({super.key, required this.day, required this.type});
@@ -43,7 +44,9 @@ class DayTile extends StatelessWidget {
                   highlightColor:
                       Theme.of(context).colorScheme.surfaceContainerHighest,
                   onTap: () => _showLessonInfoDialog(context, lesson),
-                  child: LessonTile(lesson: lesson, type: type)),
+                  child: lesson.subgroupData != null
+                      ? LessonWithSubgroupTile(lesson: lesson, type: type)
+                      : LessonTile(lesson: lesson, type: type)),
             ),
           );
         })
@@ -51,7 +54,7 @@ class DayTile extends StatelessWidget {
     );
   }
 
-  void _showLessonInfoDialog(BuildContext context, LessonEntity lesson) {
+  void _showLessonInfoDialog(BuildContext context, Lesson lesson) {
     showModalBottomSheet(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(30))),

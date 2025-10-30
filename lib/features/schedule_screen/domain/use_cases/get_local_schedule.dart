@@ -1,4 +1,4 @@
-import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/repository/schedule_repository.dart';
 
 class GetLocalSchedule {
@@ -6,7 +6,7 @@ class GetLocalSchedule {
 
   GetLocalSchedule(this._repository);
 
-  Future<ScheduleEntity> call({bool startByToday = true}) async {
+  Future<Schedule> call({bool startByToday = true}) async {
     final schedule = await _repository.getLocalSchedule();
 
     if (!startByToday) {
@@ -23,7 +23,7 @@ class GetLocalSchedule {
     })
         .toList();
 
-    return ScheduleEntity(
+    return Schedule(
       firstDate: trimmedDays.isNotEmpty ? trimmedDays.first.date : today,
       lastDate: schedule.lastDate,
       days: trimmedDays,

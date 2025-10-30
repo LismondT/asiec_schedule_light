@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/data/data_sources/local/schedule_local_datasource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,13 +12,13 @@ class ScheduleSharedPreferencesDatasource extends ScheduleLocalDatasource {
   ScheduleSharedPreferencesDatasource(this._preferences);
 
   @override
-  Future<ScheduleEntity> getSchedule() async {
+  Future<Schedule> getSchedule() async {
     try {
       final json = await _preferences.getString(_scheduleKey) ?? '';
       final Map<String, dynamic> scheduleRaw = jsonDecode(json);
-      return ScheduleEntity.fromJson(scheduleRaw);
+      return Schedule.fromJson(scheduleRaw);
     } catch(e) {
-      return ScheduleEntity(
+      return Schedule(
           firstDate: DateTime(0),
           lastDate: DateTime(0),
           days: []);
@@ -26,7 +26,7 @@ class ScheduleSharedPreferencesDatasource extends ScheduleLocalDatasource {
   }
 
   @override
-  Future<void> saveSchedule(ScheduleEntity schedule) async {
+  Future<void> saveSchedule(Schedule schedule) async {
     final json = jsonEncode(schedule.toJson());
     await _preferences.setString(_scheduleKey, json);
   }

@@ -1,4 +1,4 @@
-import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/day.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/repository/schedule_repository.dart';
 
 class GetCurrentDay {
@@ -6,7 +6,7 @@ class GetCurrentDay {
 
   GetCurrentDay(this._repository);
 
-  Future<DayEntity?> call() async {
+  Future<Day?> call() async {
     try {
       final schedule = await _repository.getLocalSchedule();
 

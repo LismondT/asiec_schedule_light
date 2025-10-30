@@ -1,4 +1,4 @@
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +10,7 @@ class LectureTimerLoadingState extends LectureTimerState {}
 
 class LectureTimerLessonState extends LectureTimerState {
   final ScheduleRequestType requestType;
-  final LessonEntity lesson;
+  final Lesson lesson;
   final Duration freeTime;
 
   LectureTimerLessonState(this.lesson, this.freeTime,
@@ -19,7 +19,7 @@ class LectureTimerLessonState extends LectureTimerState {
 
 class LectureTimerFreeTimeState extends LectureTimerState {
   final ScheduleRequestType requestType;
-  final LessonEntity? nextLesson;
+  final Lesson? nextLesson;
   final TimeOfDay start;
   final TimeOfDay end;
 
@@ -34,7 +34,7 @@ class LectureTimerHolidaysState extends LectureTimerState {}
 
 class LectureTimerBeforeLessonsStartState extends LectureTimerState {
   final ScheduleRequestType requestType;
-  final LessonEntity lesson;
+  final Lesson lesson;
 
   LectureTimerBeforeLessonsStartState(this.lesson,
       {this.requestType = ScheduleRequestType.groups});

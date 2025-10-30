@@ -1,6 +1,6 @@
-import 'package:asiec_schedule/core/domain/entity/day_entity.dart';
-import 'package:asiec_schedule/core/domain/entity/lesson_entity.dart';
-import 'package:asiec_schedule/core/domain/entity/schedule_entity.dart';
+import 'package:asiec_schedule/core/domain/entity/day.dart';
+import 'package:asiec_schedule/core/domain/entity/lesson.dart';
+import 'package:asiec_schedule/core/domain/entity/schedule.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/core/utils/altag/altag_schedule_time_service.dart';
 import 'package:asiec_schedule/features/schedule_screen/data/data_sources/remote/schedule_remote_datasource.dart';
@@ -18,11 +18,11 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
   AltagScheduleRemoteDatasource(this._client, this._scheduleTime);
 
   @override
-  Future<ScheduleEntity> getSchedule(
+  Future<Schedule> getSchedule(
       DateTime start, int days, ScheduleRequestType type, String id) async {
     int nullDayCount = 0;
 
-    final List<DayEntity> scheduleDays = [];
+    final List<Day> scheduleDays = [];
 
     for (int i = 0; i < days; i++) {
       DateTime day = start.add(Duration(days: i));
@@ -31,7 +31,7 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
         continue;
       }
 
-      DayEntity? dayEntity = await _getDay(day, type, id);
+      Day? dayEntity = await _getDay(day, type, id);
 
       if (dayEntity == null) {
         if (nullDayCount > 3) {
@@ -48,12 +48,12 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
 
     final firstDate = scheduleDays.firstOrNull?.date ?? DateTime(1);
     final lastDate = scheduleDays.lastOrNull?.date ?? DateTime(1);
-    final schedule = ScheduleEntity(
+    final schedule = Schedule(
         firstDate: firstDate, lastDate: lastDate, days: scheduleDays);
     return schedule;
   }
 
-  Future<DayEntity?> _getDay(
+  Future<Day?> _getDay(
       DateTime date, ScheduleRequestType type, String id) async {
     final Response response = await _client.post(Uri.parse(_baseUrl),
         headers: {
@@ -93,11 +93,11 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
     };
   }
 
-  DayEntity? _parseBody(String body, DateTime date) {
+  Day? _parseBody(String body, DateTime date) {
     final Document document = parse(body);
     final dayElements = document.querySelectorAll('.table-body_item');
 
-    List<LessonEntity> lessons = [];
+    List<Lesson> lessons = [];
 
     for (final dayElement in dayElements) {
       String numberStr =
@@ -122,7 +122,7 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
         subgroup = 2;
       }
 
-      lessons.add(LessonEntity(
+      lessons.add(Lesson(
           number: number,
           name: name,
           group: group,
@@ -141,15 +141,15 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
 
     //_addTimeToClassHour(lessons);
 
-    return DayEntity(date: date, lessons: lessons);
+    return Day(date: date, lessons: lessons);
   }
 
-  void _addTimeToClassHour(List<LessonEntity> lessons) {
+  void _addTimeToClassHour(List<Lesson> lessons) {
     for (int i = 0; i < lessons.length; i++) {
       final lesson = lessons[i];
 
       if (lesson.name?.startsWith('Классный час') ?? false) {
-        LessonEntity? nextLesson;
+        Lesson? nextLesson;
         for (int j = i + 1; j < lessons.length; j++) {
           if (lessons[j].number > lesson.number) {
             nextLesson = lessons[j];
@@ -172,7 +172,7 @@ class AltagScheduleRemoteDatasource extends ScheduleRemoteDatasource {
             continue;
           }
 
-          final updatedLesson = LessonEntity(
+          final updatedLesson = Lesson(
             number: lesson.number,
             name: lesson.name,
             group: lesson.group,
