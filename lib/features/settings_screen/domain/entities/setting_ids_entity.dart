@@ -1,6 +1,6 @@
-import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
-
 import 'dart:convert';
+
+import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 
 class SettingIdsEntity {
   final Map<String, String> groupIds;
@@ -19,6 +19,18 @@ class SettingIdsEntity {
       ScheduleRequestType.teachers => teacherIds,
       ScheduleRequestType.classrooms => classroomIds,
     };
+  }
+
+  String? getKeyName(ScheduleRequestType type, String value) {
+    final Map<String, String> targetMap = getIds(type);
+
+    for (final entry in targetMap.entries) {
+      if (entry.value == value) {
+        return entry.key;
+      }
+    }
+
+    return null;
   }
 
   // Преобразование объекта в JSON

@@ -69,7 +69,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> changeRequestId(String id) async {
     final settings = await _getSettings();
     final ids = await _getLocalIds();
-    final requestIdName = ids.getIds(settings.requestType)[id] ?? 'Неизвестно';
+    final requestIdName =
+        ids.getKeyName(settings.requestType, id) ?? 'Неизвестно';
 
     try {
       await AppMetrica.reportEventWithMap('Изменение id расписания', {
