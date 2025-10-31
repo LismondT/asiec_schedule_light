@@ -1,3 +1,5 @@
+import 'package:appmetrica_plugin/appmetrica_plugin.dart';
+import 'package:asiec_schedule/core/config/flavor_config.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/entities/settings_entity.dart';
 import 'package:asiec_schedule/features/settings_screen/domain/use_cases/get_local_setting_ids.dart';
@@ -53,31 +55,40 @@ class SettingsCubit extends Cubit<SettingsState> {
       return;
     }
 
-    final updatedSettings = SettingsEntity(
-        isDarkMode: settings.isDarkMode,
-        requestType: type,
-        requestId: '',
-        startSavedScheduleByToday: settings.startSavedScheduleByToday);
+    try {
+      AppMetrica.reportEventWithMap('Изменение типа расписания',
+          {'flavor': FlavorConfig.instance.flavor.name, 'type': type.name});
+    } catch (e) {
+      //
+    }
+
+    final updatedSettings = settings.copyWith(requestType: type);
     await saveSettings(updatedSettings);
   }
 
   Future<void> changeRequestId(String id) async {
     final settings = await _getSettings();
-    final updatedSettings = SettingsEntity(
-        isDarkMode: settings.isDarkMode,
-        requestType: settings.requestType,
-        requestId: id,
-        startSavedScheduleByToday: settings.startSavedScheduleByToday);
+    final ids = await _getLocalIds();
+    final requestIdName = ids.getIds(settings.requestType)[id] ?? 'Неизвестно';
+
+    try {
+      await AppMetrica.reportEventWithMap('Изменение id расписания', {
+        'flavor': FlavorConfig.instance.flavor.name,
+        'type': settings.requestType.name,
+        'name': requestIdName,
+        'id': id
+      });
+    } catch (e) {
+      //
+    }
+
+    final updatedSettings = settings.copyWith(requestId: id);
     await saveSettings(updatedSettings);
   }
 
   Future<void> changeTrimSchedule(bool value) async {
     final settings = await _getSettings();
-    final updatedSettings = SettingsEntity(
-        isDarkMode: settings.isDarkMode,
-        requestType: settings.requestType,
-        requestId: settings.requestId,
-        startSavedScheduleByToday: value);
+    final updatedSettings = settings.copyWith(trimSchedule: value);
     await saveSettings(updatedSettings);
   }
 }

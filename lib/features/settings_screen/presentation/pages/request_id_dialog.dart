@@ -14,13 +14,15 @@ class RequestIdDialog extends StatefulWidget {
 
 class _RequestIdDialogState extends State<RequestIdDialog> {
   final ScrollController _scrollController = ScrollController();
-  final Map<String, GlobalKey> _sectionKeys = {};
+  final Map<String, double> _sectionPositions = {};
+  String _currentSection = '';
+  bool _isScrolling = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeSectionKeys();
+      _calculateSectionPositions();
     });
   }
 
@@ -30,30 +32,54 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
     super.dispose();
   }
 
-  void _initializeSectionKeys() {
+  // Вычисляем позиции всех секций
+  void _calculateSectionPositions() {
     final groupedItems = _groupItemsByFirstChar(widget.ids);
-    final sectionLetters = groupedItems.keys.toList()..sort(_sortSections);
+    final sectionChars = groupedItems.keys.toList()..sort(_sortSections);
 
-    for (final letter in sectionLetters) {
-      _sectionKeys[letter] = GlobalKey();
+    double position = 0;
+
+    for (final char in sectionChars) {
+      _sectionPositions[char] = position;
+
+      // Вычисляем высоту секции: заголовок + все элементы
+      final sectionItems = groupedItems[char]!;
+      final headerHeight = 48.0; // Высота заголовка
+      final itemHeight = 48.0; // Высота одного элемента
+      final sectionHeight = headerHeight + (sectionItems.length * itemHeight);
+
+      position += sectionHeight;
     }
   }
 
   void _scrollToSection(String sectionChar) {
-    final key = _sectionKeys[sectionChar];
-    if (key != null) {
-      final context = key.currentContext;
-      if (context != null) {
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
+    final position = _sectionPositions[sectionChar];
+    if (position != null) {
+      setState(() {
+        _currentSection = sectionChar;
+        _isScrolling = true;
+      });
+
+      _scrollController
+          .animateTo(
+        position,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      )
+          .then((_) {
+        // Сбрасываем флаг скроллинга после завершения анимации
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _isScrolling = false;
+            });
+          }
+        });
+      });
     }
   }
 
-  // Группировка элементов по первой букве/цифре
+  // Группировка элементов по КАЖДОМУ уникальному первому символу
   Map<String, List<MapEntry<String, String>>> _groupItemsByFirstChar(
       Map<String, String> items) {
     final Map<String, List<MapEntry<String, String>>> grouped = {};
@@ -62,49 +88,30 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
       ..sort((a, b) => a.key.compareTo(b.key));
 
     for (final entry in sortedEntries) {
-      // Получаем первую букву (для английских букв) или первый символ
       String firstChar =
           entry.key.isNotEmpty ? entry.key[0].toUpperCase() : '#';
-
-      // Если это цифра, группируем в секцию "0-9"
-      if (firstChar.compareTo('0') >= 0 && firstChar.compareTo('9') <= 0) {
-        firstChar = '0-9';
-      }
-      // Если это не буква и не цифра, группируем в "#"
-      else if (firstChar.compareTo('A') < 0 || firstChar.compareTo('Z') > 0) {
-        firstChar = '#';
-      }
-
       grouped.putIfAbsent(firstChar, () => []).add(entry);
     }
 
     return grouped;
   }
 
-  // Сортировка секций (сначала цифры, потом буквы, потом остальное)
+  // Сортировка секций
   int _sortSections(String a, String b) {
-    if (a == '0-9') return -1;
-    if (b == '0-9') return 1;
-    if (a == '#') return 1;
-    if (b == '#') return -1;
-    return a.compareTo(b);
-  }
+    final bool aIsDigit = a.compareTo('0') >= 0 && a.compareTo('9') <= 0;
+    final bool bIsDigit = b.compareTo('0') >= 0 && b.compareTo('9') <= 0;
+    final bool aIsLetter = a.compareTo('A') >= 0 && a.compareTo('Z') <= 0;
+    final bool bIsLetter = b.compareTo('A') >= 0 && b.compareTo('Z') <= 0;
 
-  void _showSectionDialog(BuildContext context, String sectionChar) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Секция $sectionChar'),
-        content: Text(
-            'Прокрутите список чтобы найти элементы начинающиеся на "$sectionChar"'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    if (aIsDigit && !bIsDigit) return -1;
+    if (!aIsDigit && bIsDigit) return 1;
+    if (aIsDigit && bIsDigit) return a.compareTo(b);
+
+    if (aIsLetter && !bIsLetter) return -1;
+    if (!aIsLetter && bIsLetter) return 1;
+    if (aIsLetter && bIsLetter) return a.compareTo(b);
+
+    return a.compareTo(b);
   }
 
   void _handleIdSelection(BuildContext context, String id) {
@@ -119,10 +126,39 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
     });
   }
 
+  // Определяем видимую секцию при скролле
+  void _onScroll() {
+    if (_isScrolling) return; // Не обновляем во время программного скролла
+
+    final scrollPosition = _scrollController.offset;
+    final groupedItems = _groupItemsByFirstChar(widget.ids);
+    final sectionChars = groupedItems.keys.toList()..sort(_sortSections);
+
+    String? newCurrentSection;
+
+    // Ищем секцию, которая сейчас вверху
+    for (final char in sectionChars.reversed) {
+      final position = _sectionPositions[char];
+      if (position != null && position <= scrollPosition + 50) {
+        newCurrentSection = char;
+        break;
+      }
+    }
+
+    if (newCurrentSection != null && newCurrentSection != _currentSection) {
+      setState(() {
+        _currentSection = newCurrentSection!;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedItems = _groupItemsByFirstChar(widget.ids);
-    final sectionLetters = groupedItems.keys.toList()..sort(_sortSections);
+    final sectionChars = groupedItems.keys.toList()..sort(_sortSections);
+
+    // Добавляем слушатель скролла
+    _scrollController.addListener(_onScroll);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -130,15 +166,15 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Text(
-              'Выберите',
+              'Выберите предмет',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
           Expanded(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 400, minHeight: 200),
+              constraints: const BoxConstraints(maxHeight: 500, minHeight: 300),
               child: Row(
                 children: [
                   // Основной список с секциями
@@ -146,13 +182,14 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
                     child: ListView.builder(
                       controller: _scrollController,
                       shrinkWrap: true,
-                      itemCount: sectionLetters.length,
+                      itemCount: sectionChars.length,
                       itemBuilder: (context, sectionIndex) {
-                        final sectionChar = sectionLetters[sectionIndex];
+                        final sectionChar = sectionChars[sectionIndex];
                         final sectionItems = groupedItems[sectionChar]!;
 
                         return Column(
-                          key: _sectionKeys[sectionChar],
+                          key: Key('section_$sectionChar'),
+                          // Используем Key вместо GlobalKey
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Заголовок секции
@@ -160,20 +197,43 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
-                                vertical: 8,
+                                vertical: 12,
                               ),
-                              color: Colors.grey[100],
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceVariant
+                                    .withOpacity(0.5),
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Theme.of(context)
+                                        .dividerColor
+                                        .withOpacity(0.3),
+                                  ),
+                                ),
+                              ),
                               child: Text(
                                 sectionChar,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
+                                  overflow: TextOverflow.ellipsis,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ),
                             // Элементы секции
                             ...sectionItems.map((item) => ListTile(
-                                  title: Text(item.key),
+                                  title: Text(
+                                    item.key,
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  visualDensity:
+                                      const VisualDensity(vertical: -2),
                                   onTap: () =>
                                       _handleIdSelection(context, item.value),
                                 )),
@@ -183,42 +243,79 @@ class _RequestIdDialogState extends State<RequestIdDialog> {
                     ),
                   ),
 
-                  // Алфавитный индекс
+                  // алфавитный индекс
                   Container(
-                    width: 24,
-                    margin: const EdgeInsets.only(right: 8),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: sectionLetters.length,
-                      itemBuilder: (context, index) {
-                        final letter = sectionLetters[index];
-                        return GestureDetector(
-                          onTap: () => _scrollToSection(letter),
-                          child: Container(
-                            height: 20,
-                            alignment: Alignment.center,
-                            child: Text(
-                              letter,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
+                    width: 36,
+                    margin: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: sectionChars.length,
+                            itemBuilder: (context, index) {
+                              final char = sectionChars[index];
+                              final isActive = _currentSection == char;
+
+                              return GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => _scrollToSection(char),
+                                child: Container(
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isActive
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer
+                                        : null,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 200),
+                                    style: TextStyle(
+                                      fontSize: isActive ? 13 : 11,
+                                      fontWeight: isActive
+                                          ? FontWeight.bold
+                                          : FontWeight.w500,
+                                      color: isActive
+                                          ? Theme.of(context).primaryColor
+                                          : Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.6),
+                                    ),
+                                    child: Text(char),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Закрыть'),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Theme.of(context).dividerColor.withOpacity(0.3),
+                ),
+              ),
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Закрыть'),
+              ),
             ),
           ),
         ],

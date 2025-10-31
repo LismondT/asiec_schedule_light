@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp.router(
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
+                seedColor: state.seedColor,
                 brightness: state.isDark ? Brightness.dark : Brightness.light),
             useMaterial3: true,
           ),

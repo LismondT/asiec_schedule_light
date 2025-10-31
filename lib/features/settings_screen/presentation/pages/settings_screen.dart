@@ -8,6 +8,7 @@ import 'package:asiec_schedule/features/settings_screen/domain/entities/settings
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_cubit.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/cubit/settings_states.dart';
 import 'package:asiec_schedule/features/settings_screen/presentation/pages/request_id_dialog.dart';
+import 'package:asiec_schedule/features/settings_screen/presentation/widgets/color_theme_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -50,6 +51,8 @@ class SettingsScreen extends StatelessWidget {
         children: [
           _buildSectionHeader('Внешний вид'),
           _buildThemeCard(context),
+          const SizedBox(height: 8),
+          ColorThemePicker(),
           const SizedBox(height: 24),
           _buildSectionHeader('Расписание'),
           _buildRequestTypeCard(context, settings),
@@ -62,6 +65,7 @@ class SettingsScreen extends StatelessWidget {
           _buildTelegramCard(context),
           const SizedBox(height: 24),
           _buildAppInfoCard(),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -104,7 +108,7 @@ class SettingsScreen extends StatelessWidget {
         trailing: Switch(
           value: isDarkTheme,
           onChanged: (value) => _setThemeBrightness(context, value),
-          activeColor: Theme.of(context).colorScheme.primary,
+          activeThumbColor: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
@@ -256,7 +260,7 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Обрезать расписание'),
         subtitle: const Text('Показывать резервное расписание с текущего дня'),
         trailing: Switch(
-          value: settings.startSavedScheduleByToday,
+          value: settings.trimSchedule,
           onChanged: (value) async {
             await context.read<SettingsCubit>().changeTrimSchedule(value);
             context.read<ScheduleCubit>().loadDefaultSchedule();
@@ -291,24 +295,25 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _buildAppInfoCard() {
     return Card(
-      elevation: 1,
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               FlavorConfig.instance.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               'Версия: ${FlavorConfig.instance.displayVersion}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
               ),
@@ -332,12 +337,10 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _launchTelegram(BuildContext context) async {
-    // Попробуем открыть через tg:// (для приложения)
     const telegramAppUrl =
-        'tg://resolve?domain=LismondT'; // Замените на ваш username
+        'tg://resolve?domain=LismondT';
 
-    // Резервная ссылка для веб-версии
-    const telegramWebUrl = 'https://t.me/LismondT'; // Замените на ваш username
+    const telegramWebUrl = 'https://t.me/LismondT';
 
     try {
       // Сначала пробуем открыть в приложении

@@ -15,6 +15,7 @@ class SettingsRepositoryImpl extends SettingsRepository {
       this.preferences, this._remoteIdsDatasource, this._localIdsDatasource);
 
   static const _isDarkThemeSelectedKey = 'dark_theme_selected';
+  static const _themeColorSeed = 'theme_color_seed';
   static const _requestTypeKey = 'request_type';
   static const _requestIdKey = 'request_id';
   static const _savedScheduleByToday = 'saved_schedule_by_today';
@@ -23,6 +24,7 @@ class SettingsRepositoryImpl extends SettingsRepository {
   Future<SettingsEntity> getSettings() async {
     try {
       final isDarkTheme = await preferences.getBool(_isDarkThemeSelectedKey);
+      final themeSeedColor = await preferences.getString(_themeColorSeed) ?? '';
       final requestType = ScheduleRequestType
           .values[await preferences.getInt(_requestTypeKey) ?? 0];
       final requestId = await preferences.getString(_requestIdKey);
@@ -31,15 +33,17 @@ class SettingsRepositoryImpl extends SettingsRepository {
 
       return SettingsEntity(
           isDarkMode: isDarkTheme ?? false,
+          themeSeedColor: themeSeedColor,
           requestType: requestType,
           requestId: requestId ?? '',
-          startSavedScheduleByToday: startSavedScheduleByToday ?? true);
+          trimSchedule: startSavedScheduleByToday ?? true);
     } catch (e) {
       final settings = SettingsEntity(
           isDarkMode: false,
+          themeSeedColor: '',
           requestType: ScheduleRequestType.groups,
           requestId: '',
-          startSavedScheduleByToday: true);
+          trimSchedule: true);
 
       await saveSettings(settings);
       return settings;
@@ -49,10 +53,10 @@ class SettingsRepositoryImpl extends SettingsRepository {
   @override
   Future<void> saveSettings(SettingsEntity settings) async {
     await preferences.setBool(_isDarkThemeSelectedKey, settings.isDarkMode);
+    await preferences.setString(_themeColorSeed, settings.themeSeedColor);
     await preferences.setInt(_requestTypeKey, settings.requestType.index);
     await preferences.setString(_requestIdKey, settings.requestId);
-    await preferences.setBool(
-        _savedScheduleByToday, settings.startSavedScheduleByToday);
+    await preferences.setBool(_savedScheduleByToday, settings.trimSchedule);
   }
 
   @override

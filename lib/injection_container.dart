@@ -1,7 +1,9 @@
 // ignore_for_file: dead_code
 
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:appmetrica_plugin/appmetrica_plugin.dart';
 import 'package:asiec_schedule/core/bloc/theme/theme_cubit.dart';
 import 'package:asiec_schedule/core/config/flavor_config.dart';
 import 'package:asiec_schedule/core/network/http_override.dart';
@@ -44,7 +46,9 @@ import 'features/settings_screen/data/data_sources/remote/asiec_ids_datasource.d
 final sl = GetIt.instance;
 
 Future<void> initializeDependencies() async {
-  await FlavorConfig.instance.initializeVersion();
+  await FlavorConfig.instance.initialize();
+
+  _initializeAppMetricaInBackground();
 
   final dio = Dio(BaseOptions());
 
@@ -117,4 +121,33 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<SettingsCubit>(
       () => SettingsCubit(sl(), sl(), sl(), sl(), sl()));
   sl.registerFactory(() => LectureTimerCubit(sl()));
+}
+
+void _initializeAppMetricaInBackground() {
+  Future.microtask(() async {
+    try {
+      final config = FlavorConfig.instance;
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      await AppMetrica.activate(AppMetricaConfig(
+        config.metricaApi,
+        appVersion: config.version,
+        appBuildNumber: int.parse(config.buildNumber),
+        sessionTimeout: 30,
+        locationTracking: false,
+      ));
+
+      await AppMetrica.reportEventWithMap('app_launch', {
+        'flavor': config.flavor.name,
+        'app_version': config.displayVersion,
+        'build_number': config.buildNumber,
+        'platform': 'android',
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+
+    } catch (e) {
+      log('AppMetrica initialization error: $e');
+    }
+  });
 }

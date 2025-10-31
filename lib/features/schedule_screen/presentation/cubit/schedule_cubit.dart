@@ -1,3 +1,4 @@
+import 'package:appmetrica_plugin/appmetrica_plugin.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_default_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_local_schedule.dart';
 import 'package:asiec_schedule/features/schedule_screen/domain/use_cases/get_schedule.dart';
@@ -43,8 +44,8 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
       if (!isRequestIdChanged) {
         try {
-          final localSchedule = await _getLocalSchedule(
-              startByToday: settings.startSavedScheduleByToday);
+          final localSchedule =
+              await _getLocalSchedule(startByToday: settings.trimSchedule);
           if (localSchedule.days.isNotEmpty) {
             emit(ScheduleStateLoaded(localSchedule, type,
                 isLocalSchedule: true));
@@ -79,6 +80,13 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   Future<void> loadSchedule(DateTime date) async {
     emit(ScheduleStateLoading());
     _selectedDate = date;
+
+    try {
+      AppMetrica.reportEventWithMap(
+          'Загрузка расписания по дате', {'date': date.toString()});
+    } catch (e) {
+      //
+    }
 
     try {
       final settings = await _getSettings();

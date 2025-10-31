@@ -1,5 +1,6 @@
+import 'dart:convert';
 
-
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 enum AppFlavor { asiec, altag }
@@ -7,8 +8,9 @@ enum AppFlavor { asiec, altag }
 class FlavorConfig {
   final AppFlavor flavor;
   final String name;
-  late String version;
-  late String buildNumber;
+  late final String version;
+  late final String buildNumber;
+  late final Map<String, dynamic> _config;
 
   static FlavorConfig? _instance;
 
@@ -19,19 +21,25 @@ class FlavorConfig {
     return _instance!;
   }
 
-  Future<void> initializeVersion() async {
+  Future<void> initialize() async {
     final packageInfo = await PackageInfo.fromPlatform();
     version = packageInfo.version;
     buildNumber = packageInfo.buildNumber;
+
+    final String configString =
+        await rootBundle.loadString('assets/config.json');
+    _config = jsonDecode(configString);
   }
 
   static FlavorConfig get instance {
     return _instance!;
   }
 
+  String get metricaApi => _config['metrica_api_key'];
+
   bool get isAsiec => flavor == AppFlavor.asiec;
 
   bool get isAltag => flavor == AppFlavor.altag;
 
-  String get displayVersion => 'v$version (build $buildNumber';
+  String get displayVersion => 'v$version (build $buildNumber)';
 }
