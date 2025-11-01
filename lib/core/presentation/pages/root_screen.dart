@@ -9,40 +9,48 @@ class RootScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: PageTransitionSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (
-            Widget child,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            ) {
-          return SharedAxisTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            transitionType: SharedAxisTransitionType.horizontal,
-            child: child,
-          );
-        },
-        child: navigationShell,
-      ),
+      extendBody: true, // Важно для прозрачности!
+      body: navigationShell,
       floatingActionButton: _buildCenterButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        height: 70,
-        padding: EdgeInsets.zero,
-        color: theme.secondaryContainer,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 16,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(1, Icons.timer_outlined, 'Время', context),
-            const SizedBox(width: 20),
-            _buildNavItem(2, Icons.settings, 'Настройки', context),
-          ],
+      bottomNavigationBar: _buildTransparentBottomAppBar(context),
+    );
+  }
+
+  Widget _buildTransparentBottomAppBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: const ColorFilter.mode(Colors.transparent, BlendMode.srcOver),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: colorScheme.primary.withOpacity(0.5),
+              ),
+            ),
+            child: BottomAppBar(
+              height: 60,
+              padding: EdgeInsets.zero,
+              color: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              elevation: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(1, Icons.timer_outlined, 'Время', context),
+                  const SizedBox(width: 40),
+                  _buildNavItem(2, Icons.settings, 'Настройки', context),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -56,7 +64,7 @@ class RootScreen extends StatelessWidget {
       backgroundColor: isCenterSelected
           ? Theme.of(context).colorScheme.primary
           : Theme.of(context).colorScheme.primaryContainer,
-      elevation: isCenterSelected ? 6 : 4,
+      elevation: 2,
       child: Icon(
         Icons.schedule,
         color: isCenterSelected
@@ -68,38 +76,62 @@ class RootScreen extends StatelessWidget {
   }
 
   Widget _buildNavItem(
-      int index, IconData icon, String label, BuildContext context) {
+      int index,
+      IconData icon,
+      String label,
+      BuildContext context,
+      ) {
     final isSelected = navigationShell.currentIndex == index;
-    return IconButton(
-      icon: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSecondaryContainer,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _navigateToBranch(index),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            height: 56,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
               color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSecondaryContainer,
+                  ? colorScheme.primary.withOpacity(0.15)
+                  : Colors.transparent,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 24,
+                  color: isSelected
+                      ? colorScheme.primary
+                      : colorScheme.onSurface,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
-      onPressed: () => _navigateToBranch(index),
     );
   }
 
   void _navigateToBranch(int index) {
     navigationShell.goBranch(
       index,
-      initialLocation: false, //- это важно для анимации!
-      //initialLocation: index == navigationShell.currentIndex,
+      initialLocation: false,
     );
   }
 }

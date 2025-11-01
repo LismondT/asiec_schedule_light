@@ -1,8 +1,8 @@
 import 'package:asiec_schedule/core/domain/entity/day.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:asiec_schedule/core/domain/entity/schedule.dart';
-import 'package:asiec_schedule/core/domain/entity/subgroup_data.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
+import 'package:asiec_schedule/core/utils/extensions/lesson_extension.dart';
 import 'package:asiec_schedule/features/schedule_screen/data/data_sources/remote/schedule_remote_datasource.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -70,7 +70,9 @@ class AsiecScheduleRemoteDatasource extends ScheduleRemoteDatasource {
       if (row.querySelector('.den') != null) {
         // Это строка с датой
         if (currentDate != null && currentLessons.isNotEmpty) {
-          currentLessons = _updateSubgroups(currentLessons);
+          currentLessons =
+              currentLessons.withUpdatedSubgroups().withAddedTags();
+
           days.add(Day(date: currentDate, lessons: currentLessons));
         }
         currentLessons = [];
@@ -152,63 +154,5 @@ class AsiecScheduleRemoteDatasource extends ScheduleRemoteDatasource {
       hour: int.parse(parts[0]),
       minute: int.parse(parts[1]),
     );
-  }
-
-  /// Проходим по занятиям. Если занятия 2х подгрупп проходят в одно время,
-  /// то добавляем subgroupData, и убираем повторение
-  List<Lesson> _updateSubgroups(List<Lesson> currentLessons) {
-    final List<Lesson> result = [];
-    final Map<String, List<Lesson>> lessonsByKey = {};
-
-    // Группируем занятия по ключу (дата + номер + время + название + группа)
-    for (final lesson in currentLessons) {
-      final key =
-          '${lesson.date?.toIso8601String()}_${lesson.number}_${lesson.startTime.hour}:${lesson.startTime.minute}_${lesson.endTime.hour}:${lesson.endTime.minute}_${lesson.name}_${lesson.group}';
-
-      if (!lessonsByKey.containsKey(key)) {
-        lessonsByKey[key] = [];
-      }
-      lessonsByKey[key]!.add(lesson);
-    }
-
-    // Обрабатываем каждую группу занятий
-    for (final entry in lessonsByKey.entries) {
-      final lessons = entry.value;
-
-      if (lessons.length == 2) {
-        // Если два занятия - проверяем, что это подгруппы
-        final lesson1 = lessons[0];
-        final lesson2 = lessons[1];
-
-        // Проверяем, что это действительно подгруппы (разные номера подгрупп)
-        if (lesson1.subgroup != 0 &&
-            lesson2.subgroup != 0 &&
-            lesson1.subgroup != lesson2.subgroup) {
-          // Создаем основное занятие с subgroupData
-          final mainLesson = lesson1.copyWith(
-            subgroup: 0, // основное занятие без подгруппы
-            subgroupData: SubgroupData(
-              subgroup: lesson2.subgroup,
-              teacher: lesson2.teacher,
-              classroom: lesson2.classroom,
-              territory: lesson2.territory,
-            ),
-          );
-
-          result.add(mainLesson);
-        } else {
-          // Если это не подгруппы, добавляем оба занятия
-          result.addAll(lessons);
-        }
-      } else {
-        // Если не ровно два занятия - добавляем все как есть
-        result.addAll(lessons);
-      }
-    }
-
-    // Сортируем по номеру занятия для consistency
-    result.sort((a, b) => a.number.compareTo(b.number));
-
-    return result;
   }
 }

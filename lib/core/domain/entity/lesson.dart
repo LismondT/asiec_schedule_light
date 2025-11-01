@@ -35,6 +35,9 @@ class Lesson {
   /// Дата занятия
   final DateTime? date;
 
+  /// Таблички возле названия занятия (пр: "сам. раб.", "дист. раб.")
+  final List<String> tags;
+
   TimeOfDay duration() {
     // Переводим оба времени в минуты
     int minutes1 = startTime.hour * 60 + startTime.minute;
@@ -61,7 +64,8 @@ class Lesson {
       required this.startTime,
       required this.endTime,
       required this.date,
-      this.subgroupData});
+      this.subgroupData,
+      this.tags = const []});
 
   Lesson copyWith(
       {int? number,
@@ -74,7 +78,8 @@ class Lesson {
       String? territory,
       TimeOfDay? startTime,
       TimeOfDay? endTime,
-      DateTime? date}) {
+      DateTime? date,
+      List<String>? tags}) {
     return Lesson(
         number: number ?? this.number,
         name: name ?? this.name,
@@ -86,7 +91,8 @@ class Lesson {
         territory: territory ?? this.territory,
         startTime: startTime ?? this.startTime,
         endTime: endTime ?? this.endTime,
-        date: date ?? this.date);
+        date: date ?? this.date,
+        tags: tags ?? this.tags);
   }
 
   Map<String, dynamic> toJson() {
@@ -108,6 +114,7 @@ class Lesson {
         'minute': endTime.minute,
       },
       'date': date?.toIso8601String(),
+      'tags': tags
     };
   }
 
@@ -133,6 +140,9 @@ class Lesson {
       ),
       date:
           json['date'] != null ? DateTime.parse(json['date'] as String) : null,
+      tags: json['tags'] != null
+          ? List<String>.from(json['tags'] as List)
+          : const [],
     );
   }
 }

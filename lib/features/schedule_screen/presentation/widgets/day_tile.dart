@@ -1,7 +1,7 @@
 import 'package:asiec_schedule/core/domain/entity/day.dart';
 import 'package:asiec_schedule/core/domain/entity/lesson.dart';
 import 'package:asiec_schedule/core/enums/schedule_request_type.dart';
-import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_info_popup.dart';
+import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_info_bottom_sheet.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_tile.dart';
 import 'package:asiec_schedule/features/schedule_screen/presentation/widgets/lesson_with_subgroup_tile.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +59,6 @@ class DayTile extends StatelessWidget {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
         context: context,
-        builder: (context) => LessonInfoPopup(lesson));
+        builder: (context) => LessonInfoBottomSheet(lesson));
   }
 }
